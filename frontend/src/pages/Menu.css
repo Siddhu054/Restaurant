@@ -1,0 +1,265 @@
+.menu-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: #f4f6f8; /* Match dashboard background or adjust */
+  padding: 20px; /* Add some padding */
+}
+
+.menu-header {
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.menu-header h2 {
+  font-size: 1.8rem;
+  margin-bottom: 5px;
+  color: #333;
+}
+
+.menu-header p {
+  font-size: 1rem;
+  color: #7b7b7b;
+  margin-bottom: 15px;
+}
+
+.menu-search-bar {
+  width: 100%; /* Full width for mobile */
+  padding: 12px 20px;
+  border-radius: 8px; /* Adjust border radius as per Figma */
+  border: 1px solid #e0e0e0;
+  background: #fff;
+  font-size: 1rem;
+  box-sizing: border-box; /* Include padding and border in element's total width */
+}
+
+.menu-categories {
+  display: flex;
+  gap: 15px; /* Space between tabs */
+  margin-bottom: 20px;
+  overflow-x: auto; /* Enable horizontal scrolling for many tabs */
+  padding-bottom: 10px; /* Add some padding for scrollbar */
+  -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+}
+
+.category-tab {
+  flex-shrink: 0; /* Prevent tabs from shrinking */
+  padding: 10px 15px; /* Padding inside tabs */
+  border-radius: 20px; /* Pill shape */
+  background: #fff; /* Default tab background */
+  border: 1px solid #e0e0e0; /* Default border */
+  color: #555; /* Default text color */
+  cursor: pointer;
+  transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  font-size: 0.9rem;
+}
+
+.category-tab:hover,
+.category-tab.active {
+  background: #7ed957; /* Active/hover background */
+  border-color: #7ed957; /* Active/hover border */
+  color: #fff; /* Active/hover text color */
+}
+
+.menu-items-list {
+  flex-grow: 1; /* Take up remaining space */
+  /* Add grid or flex styling for item cards later */
+}
+
+.menu-items-grid {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(150px, 1fr)
+  ); /* Responsive grid for item cards */
+  gap: 20px; /* Space between item cards */
+}
+
+.menu-item-card {
+  background: #fff;
+  border-radius: 8px; /* Adjust as per Figma */
+  overflow: hidden; /* Hide overflowing parts of the image */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  cursor: pointer; /* Indicate clickable */
+  transition: transform 0.2s ease-in-out;
+}
+
+.menu-item-card:hover {
+  transform: translateY(-3px);
+}
+
+.menu-item-image {
+  width: 100%;
+  height: 120px; /* Fixed height for images, adjust as needed */
+  object-fit: cover; /* Cover the area without distorting aspect ratio */
+}
+
+.menu-item-info {
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* Align text to the left */
+}
+
+.menu-item-name {
+  font-weight: bold;
+  margin-bottom: 5px;
+  color: #333;
+  font-size: 1rem;
+}
+
+.menu-item-price {
+  color: #7ed957; /* Price color as in Figma */
+  font-size: 0.9rem;
+  font-weight: bold;
+}
+
+.add-remove-buttons {
+  display: flex;
+  justify-content: center; /* Center the buttons */
+  align-items: center;
+  padding: 10px;
+  gap: 10px; /* Space between buttons and quantity */
+  background: #f8f8f8; /* Light background for the button area */
+}
+
+.add-remove-buttons button {
+  background: #eee;
+  border: none;
+  border-radius: 50%; /* Circular buttons */
+  width: 30px; /* Button size */
+  height: 30px; /* Button size */
+  font-size: 1.2rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.add-remove-buttons button:hover {
+  background: #ddd;
+}
+
+.add-remove-buttons span {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #333;
+}
+
+.menu-footer {
+  margin-top: 20px;
+  width: 100%; /* Full width for the footer */
+  padding: 15px 0; /* Add some vertical padding */
+  background: #fff; /* White background for the footer */
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05); /* Shadow at the top */
+  display: flex;
+  flex-direction: column; /* Stack summary and button */
+  gap: 15px; /* Space between summary and button */
+  border-top-left-radius: 16px; /* Rounded top corners */
+  border-top-right-radius: 16px; /* Rounded top corners */
+  box-sizing: border-box; /* Include padding in width */
+}
+
+.cart-summary {
+  padding: 0 15px; /* Horizontal padding */
+  display: flex;
+  flex-direction: column;
+  gap: 8px; /* Space between summary lines */
+}
+
+.cart-summary h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 1.2rem;
+  color: #333;
+  text-align: left;
+}
+
+.cart-item,
+.summary-line {
+  display: flex;
+  justify-content: space-between; /* Space out text and price/value */
+  font-size: 1rem;
+  color: #555;
+}
+
+.cart-item span:first-child,
+.summary-line span:first-child {
+  font-weight: normal; /* Ensure the labels are not bold */
+}
+
+.cart-item span:last-child,
+.summary-line span:last-child {
+  font-weight: bold; /* Make values/prices bold */
+  color: #333; /* Darker color for values */
+}
+
+.summary-line.grand-total {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #222; /* Darker color for grand total */
+  border-top: 1px solid #eee; /* Separator line */
+  padding-top: 10px;
+  margin-top: 10px;
+}
+
+.next-button {
+  width: 100%;
+  padding: 15px; /* Ensure consistent padding */
+  border-radius: 8px; /* Match Figma */
+  border: none;
+  background: #222; /* Dark background as in Figma */
+  color: #fff;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.next-button:hover {
+  background: #444;
+}
+
+.order-type-selector {
+  display: flex;
+  gap: 15px;
+  padding: 0 15px;
+  margin-bottom: 20px;
+}
+
+.order-type-btn {
+  flex: 1;
+  padding: 15px;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  background: #fff;
+  color: #555;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.order-type-btn:hover {
+  border-color: #7ed957;
+  color: #7ed957;
+  transform: translateY(-2px);
+}
+
+.order-type-btn.active {
+  background: #7ed957;
+  border-color: #7ed957;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(126, 217, 87, 0.2);
+}
+
+.order-type-icon {
+  font-size: 1.5rem;
+}
+
+.order-type-text {
+  font-weight: 500;
+}

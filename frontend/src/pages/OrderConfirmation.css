@@ -1,0 +1,140 @@
+.order-confirmation-container {
+  max-width: 800px;
+  margin: 20px auto;
+  padding: 20px;
+  background: #f4f6f8;
+  min-height: calc(100vh - 40px); /* Adjust height */
+  border-radius: 12px; /* Match other sections */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Add shadow */
+}
+
+.order-confirmation-header {
+  text-align: center;
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #eee;
+}
+
+.order-confirmation-header h2 {
+  font-size: 2rem;
+  color: #7ed957; /* Success color */
+  margin-bottom: 10px;
+}
+
+.order-confirmation-header p {
+  color: #555;
+  font-size: 1.1rem;
+}
+
+.order-details-summary,
+.customer-info-summary,
+.delivery-instructions-summary,
+.order-tracking {
+  background: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  margin-bottom: 20px;
+}
+
+section h3 {
+  color: #333;
+  margin-bottom: 15px;
+  font-size: 1.2rem;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+}
+
+.order-info-line {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  font-size: 1rem;
+  color: #555;
+}
+
+.order-info-line span:first-child {
+  font-weight: 500;
+  color: #333;
+}
+
+.ordered-items-list {
+  list-style: none;
+  padding: 0;
+  margin: 15px 0;
+  border-top: 1px solid #eee;
+  padding-top: 15px;
+}
+
+.ordered-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px dashed #eee; /* Dashed separator */
+  font-size: 1rem;
+  color: #555;
+}
+
+.ordered-item:last-child {
+  border-bottom: none;
+}
+
+.order-info-line.total {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #222;
+  border-top: 2px solid #333;
+  padding-top: 15px;
+  margin-top: 15px;
+}
+
+.back-to-menu-button {
+  display: block;
+  width: 200px; /* Fixed width */
+  margin: 30px auto 0; /* Center the button */
+  padding: 12px 20px;
+  background: #222;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  text-align: center; /* Center text in button */
+}
+
+.back-to-menu-button:hover {
+  background: #444;
+}
+
+@media (max-width: 768px) {
+  .order-confirmation-container {
+    margin: 15px;
+    padding: 15px;
+  }
+
+  .order-confirmation-header h2 {
+    font-size: 1.6rem;
+  }
+
+  section {
+    padding: 15px;
+  }
+
+  section h3 {
+    font-size: 1.1rem;
+  }
+
+  .order-info-line,
+  .ordered-item {
+    font-size: 0.95rem;
+  }
+
+  .order-info-line.total {
+    font-size: 1.1rem;
+  }
+
+  .back-to-menu-button {
+    width: 100%;
+  }
+}
