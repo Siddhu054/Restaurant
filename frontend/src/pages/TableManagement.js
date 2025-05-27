@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "../App.css"; // Assuming shared styles or create a new css file
+import axiosInstance from "../api/axios"; // Import axiosInstance
 
 function TableManagement() {
   const [tables, setTables] = useState([]);
@@ -27,11 +28,7 @@ function TableManagement() {
 
   const fetchTables = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/tables");
-      if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}`);
-      }
-      const data = await res.json();
+      const { data } = await axiosInstance.get("/api/tables");
       // Ensure tableNumber is padded with leading zeros for consistent display
       const formattedTables = data.map((table) => ({
         ...table,
@@ -58,19 +55,7 @@ function TableManagement() {
   const handleAddTable = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch("http://localhost:5000/api/tables", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(newTableData),
-      });
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(
-          errorData.message || `HTTP error! status: ${res.status}`
-        );
-      }
+      const { data } = await axiosInstance.post("/api/tables", newTableData);
       // After successful creation, refetch tables to update the list
       fetchTables();
       // Reset form and hide it
@@ -90,15 +75,7 @@ function TableManagement() {
   const handleDeleteTable = async (id) => {
     if (window.confirm("Are you sure you want to delete this table?")) {
       try {
-        const res = await fetch(`http://localhost:5000/api/tables/${id}`, {
-          method: "DELETE",
-        });
-        if (!res.ok) {
-          const errorData = await res.json();
-          throw new Error(
-            errorData.message || `HTTP error! status: ${res.status}`
-          );
-        }
+        await axiosInstance.delete(`/api/tables/${id}`);
         // After successful deletion, refetch tables
         fetchTables();
       } catch (err) {
@@ -139,25 +116,13 @@ function TableManagement() {
         throw new Error("Invalid table number.");
       }
 
-      const res = await fetch(
-        `http://localhost:5000/api/tables/${editingTable._id}`,
+      const { data } = await axiosInstance.put(
+        `/api/tables/${editingTable._id}`,
         {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            ...editTableData,
-            tableNumber: tableNumberToSend, // Use parsed integer
-          }),
+          ...editTableData,
+          tableNumber: tableNumberToSend, // Use parsed integer
         }
       );
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(
-          errorData.message || `HTTP error! status: ${res.status}`
-        );
-      }
       // After successful update, refetch tables
       fetchTables();
       // Close edit form

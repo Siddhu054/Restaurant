@@ -86,6 +86,7 @@ function Dashboard({ dashboardData, orderSummary, loading, error }) {
 
   // Helper function to filter tables
   const getFilteredTables = useMemo(() => {
+    console.log("DEBUG: Raw tables data:", dashboardData?.tables); // Add debug logging
     let filtered = dashboardData?.tables || [];
 
     // Filter by table status
@@ -108,7 +109,12 @@ function Dashboard({ dashboardData, orderSummary, loading, error }) {
           })
           .map((order) => order.table?._id || order.table)
       );
-      filtered = filtered.filter((table) => matchingTableIds.has(table._id));
+      filtered = filtered.filter(
+        (table) =>
+          // Use tableNumber as fallback if _id is missing
+          matchingTableIds.has(table._id) ||
+          matchingTableIds.has(table.tableNumber)
+      );
     }
 
     // Filter by search query
@@ -120,6 +126,7 @@ function Dashboard({ dashboardData, orderSummary, loading, error }) {
       );
     }
 
+    console.log("DEBUG: Filtered tables:", filtered); // Add debug logging
     return filtered;
   }, [
     dashboardData?.tables,

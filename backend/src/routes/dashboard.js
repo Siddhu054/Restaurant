@@ -69,13 +69,14 @@ router.get("/summary", async (req, res) => {
     // Tables
     const tables = await Table.find(
       {},
-      { tableNumber: 1, status: 1, chairs: 1, _id: 0 }
+      { tableNumber: 1, status: 1, chairs: 1, _id: 1 } // Include _id field
     ); // Include chairs as per Figma
     // Ensure tableNumber is a string and padded
     const formattedTables = tables.map((table) => ({
       ...table.toObject(), // Convert Mongoose document to plain object
       tableNumber: String(table.tableNumber).padStart(2, "0"),
     }));
+    console.log("DEBUG: Formatted tables:", formattedTables); // Add debug logging
 
     // Daily Revenue (Aggregation to calculate total revenue per day)
     const dailyRevenue = await Order.aggregate([
