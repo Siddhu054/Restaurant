@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import axiosInstance from "../api/axios"; // Import axiosInstance
 
 function Pos() {
   const navigate = useNavigate();
@@ -50,14 +51,11 @@ function Pos() {
   useEffect(() => {
     const fetchMenuItems = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/menu");
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
+        // Use axiosInstance for API call
+        const { data } = await axiosInstance.get("/api/menu");
         setMenuItems(data);
       } catch (err) {
-        setError(err.message);
+        setError(err.response?.data?.message || err.message);
         console.error("Error fetching menu items:", err);
       } finally {
         setLoading(false);
@@ -72,11 +70,8 @@ function Pos() {
   const fetchTables = async () => {
     try {
       setLoadingTables(true);
-      const response = await fetch("http://localhost:5000/api/tables");
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
+      // Use axiosInstance for API call
+      const { data } = await axiosInstance.get("/api/tables");
       // Filter for available tables if your backend returns status
       // For now, assuming all fetched tables are available to be assigned
       setTables(data);
@@ -84,7 +79,7 @@ function Pos() {
         setSelectedTable(data[0]._id); // Select the first table by default
       }
     } catch (err) {
-      setErrorTables(err.message);
+      setErrorTables(err.response?.data?.message || err.message);
       console.error("Error fetching tables:", err);
     } finally {
       setLoadingTables(false);
@@ -219,23 +214,8 @@ function Pos() {
     console.log("Order data being sent to backend:", orderDataToSend);
 
     try {
-      // Make API call to create the order
-      const response = await fetch("http://localhost:5000/api/orders", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(orderDataToSend),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(
-          errorData.message || `HTTP error! status: ${response.status}`
-        );
-      }
-
-      const data = await response.json();
+      // Use axiosInstance for API call
+      const { data } = await axiosInstance.post("/api/orders", orderDataToSend);
 
       console.log("Order placed successfully:", data);
 
@@ -250,8 +230,12 @@ function Pos() {
     } catch (err) {
       console.error("Failed to place order:", err);
       // Display an error message to the user
-      setError(`Failed to place order: ${err.message}`);
-      alert(`Failed to place order: ${err.message}`); // Also show an alert for immediate feedback
+      setError(
+        `Failed to place order: ${err.response?.data?.message || err.message}`
+      );
+      alert(
+        `Failed to place order: ${err.response?.data?.message || err.message}`
+      ); // Also show an alert for immediate feedback
     }
   };
 

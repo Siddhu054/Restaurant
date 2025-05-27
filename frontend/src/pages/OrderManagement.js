@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "../App.css"; // Assuming shared styles or create a new css file
 import OrderLine from "../components/OrderLine";
+import axiosInstance from "../api/axios"; // Import axiosInstance
 
 function OrderManagement() {
   const [orders, setOrders] = useState([]);
@@ -27,15 +28,12 @@ function OrderManagement() {
 
   const fetchOrders = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/orders");
-      if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}`);
-      }
-      const data = await res.json();
+      // Use axiosInstance for API call
+      const { data } = await axiosInstance.get("/api/orders");
       setOrders(data);
     } catch (err) {
-      setError("Failed to load orders");
-      console.error("Failed to fetch orders:", err);
+      setError(err.response?.data?.message || err.message);
+      console.error("Failed to load orders:", err);
     } finally {
       setLoading(false);
     }
@@ -43,12 +41,11 @@ function OrderManagement() {
 
   const fetchChefs = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/chefs");
-      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-      const data = await res.json();
+      // Use axiosInstance for API call
+      const { data } = await axiosInstance.get("/api/chefs");
       setChefs(Array.isArray(data) ? data : data.chefs || []);
     } catch (err) {
-      setError("Failed to load chefs");
+      setError(err.response?.data?.message || err.message);
       console.error("Failed to fetch chefs:", err);
       setChefs([]);
     }
@@ -56,44 +53,38 @@ function OrderManagement() {
 
   const handleMarkAsDone = async (orderId) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/orders/${orderId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ status: "done" }),
+      const res = await axiosInstance.put(`/api/orders/${orderId}`, {
+        status: "done",
       });
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(
-          errorData.message || `HTTP error! status: ${res.status}`
-        );
+      if (!res.data.success) {
+        throw new Error(res.data.message);
       }
       fetchOrders();
     } catch (err) {
-      setError(`Failed to update order status: ${err.message}`);
+      setError(
+        `Failed to update order status: ${
+          err.response?.data?.message || err.message
+        }`
+      );
       console.error("Failed to update order status:", err);
     }
   };
 
   const handleMarkAsServed = async (orderId) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/orders/${orderId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ status: "served" }),
+      const res = await axiosInstance.put(`/api/orders/${orderId}`, {
+        status: "served",
       });
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(
-          errorData.message || `HTTP error! status: ${res.status}`
-        );
+      if (!res.data.success) {
+        throw new Error(res.data.message);
       }
       fetchOrders();
     } catch (err) {
-      setError(`Failed to update order status: ${err.message}`);
+      setError(
+        `Failed to update order status: ${
+          err.response?.data?.message || err.message
+        }`
+      );
       console.error("Failed to update order status:", err);
     }
   };
@@ -116,48 +107,37 @@ function OrderManagement() {
       if (mappedType === "dine_in" && order.table) {
         newOrderData.table = order.table._id || order.table;
       }
-      const res = await fetch("http://localhost:5000/api/orders", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(newOrderData),
-      });
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(
-          errorData.message || `HTTP error! status: ${res.status}`
-        );
+      // Use axiosInstance for API call
+      const { data } = await axiosInstance.post("/api/orders", newOrderData);
+      if (!data.success) {
+        throw new Error(data.message);
       }
       fetchOrders();
       alert("Order repeated successfully!");
     } catch (err) {
-      setError(`Failed to repeat order: ${err.message}`);
+      setError(
+        `Failed to repeat order: ${err.response?.data?.message || err.message}`
+      );
       console.error("Failed to repeat order:", err);
-      alert(err.message);
+      alert(err.response?.data?.message || err.message);
     }
   };
 
   const handleAssignChef = async (orderId, chefId) => {
     setAssigning((prev) => ({ ...prev, [orderId]: true }));
     try {
-      const res = await fetch(
-        `http://localhost:5000/api/orders/${orderId}/assign-chef`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ chefId }),
-        }
+      const res = await axiosInstance.put(
+        `/api/orders/${orderId}/assign-chef`,
+        { chefId }
       );
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(
-          errorData.message || `HTTP error! status: ${res.status}`
-        );
+      if (!res.data.success) {
+        throw new Error(res.data.message);
       }
       await fetchOrders();
     } catch (err) {
-      setError(`Failed to assign chef: ${err.message}`);
+      setError(
+        `Failed to assign chef: ${err.response?.data?.message || err.message}`
+      );
       console.error("Failed to assign chef:", err);
     } finally {
       setAssigning((prev) => ({ ...prev, [orderId]: false }));

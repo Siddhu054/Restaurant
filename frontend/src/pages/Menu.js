@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import axiosInstance from "../api/axios"; // Import axiosInstance
 import "./Menu.css"; // We will create this file next
 
 function Menu() {
@@ -29,17 +29,15 @@ function Menu() {
       try {
         const categoryQuery =
           selectedCategory === "All" ? "" : `?category=${selectedCategory}`;
-        const response = await fetch(
-          `http://localhost:5000/api/menu${categoryQuery}`
-        );
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
+        // Use axiosInstance for API call
+        const { data } = await axiosInstance.get(`/api/menu${categoryQuery}`);
         setMenuItems(data);
       } catch (err) {
-        setError("Failed to fetch menu items");
-        console.error("Error fetching menu items:", err);
+        setError("Failed to fetch menu items"); // Consider more specific error from backend if available
+        console.error(
+          "Error fetching menu items:",
+          err.response?.data?.message || err.message
+        );
       } finally {
         setLoading(false);
       }

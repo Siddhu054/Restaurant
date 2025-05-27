@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "./App.css";
 import { BrowserRouter as Router, Route, Routes, Link } from "react-router-dom";
+import axiosInstance from "./api/axios";
 import Dashboard from "./pages/Dashboard";
 import OrderManagement from "./pages/OrderManagement";
 import TableManagement from "./pages/TableManagement";
@@ -33,83 +34,76 @@ function App() {
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        const response = await fetch(
-          "http://localhost:5000/api/dashboard/summary"
-        );
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const json = await response.json();
-        console.log("Fetched data:", json); // Log fetched data
+        const { data } = await axiosInstance.get("/api/dashboard/summary");
+        console.log("Fetched data:", data);
 
         // Defensive check for required fields and map to state
-        if (json.orderSummary) {
-          // Set the raw orderSummary data
+        if (data.orderSummary) {
           setDashboardData((prevData) => ({
             ...prevData,
-            orderSummary: json.orderSummary,
+            orderSummary: data.orderSummary,
           }));
         } else {
-          console.warn("orderSummary is undefined in fetched data", json);
-          setDashboardData((prevData) => ({ ...prevData, orderSummary: {} })); // Set empty object if data is missing
+          console.warn("orderSummary is undefined in fetched data", data);
+          setDashboardData((prevData) => ({ ...prevData, orderSummary: {} }));
         }
 
-        if (json.dailyRevenue) {
-          // Set the raw dailyRevenue data
+        if (data.dailyRevenue) {
           setDashboardData((prevData) => ({
             ...prevData,
-            dailyRevenue: json.dailyRevenue,
+            dailyRevenue: data.dailyRevenue,
           }));
         } else {
-          console.warn("dailyRevenue is undefined in fetched data", json);
-          setDashboardData((prevData) => ({ ...prevData, dailyRevenue: [] })); // Set empty array if data is missing
+          console.warn("dailyRevenue is undefined in fetched data", data);
+          setDashboardData((prevData) => ({ ...prevData, dailyRevenue: [] }));
         }
 
-        if (json.tables) {
+        if (data.tables) {
           setDashboardData((prevData) => ({
             ...prevData,
-            tables: json.tables,
+            tables: data.tables,
           }));
         } else {
-          console.warn("tables is undefined in fetched data", json);
+          console.warn("tables is undefined in fetched data", data);
           setDashboardData((prevData) => ({ ...prevData, tables: [] }));
         }
 
-        if (json.chefOrders) {
+        if (data.chefOrders) {
           setDashboardData((prevData) => ({
             ...prevData,
-            chefOrders: json.chefOrders,
+            chefOrders: data.chefOrders,
           }));
         } else {
-          console.warn("chefOrders is undefined in fetched data", json);
+          console.warn("chefOrders is undefined in fetched data", data);
           setDashboardData((prevData) => ({ ...prevData, chefOrders: [] }));
         }
-        if (json.totalChefs !== undefined) {
+
+        if (data.totalChefs !== undefined) {
           setDashboardData((prevData) => ({
             ...prevData,
-            totalChefs: json.totalChefs,
+            totalChefs: data.totalChefs,
           }));
         }
-        if (json.totalRevenue !== undefined) {
+        if (data.totalRevenue !== undefined) {
           setDashboardData((prevData) => ({
             ...prevData,
-            totalRevenue: json.totalRevenue,
+            totalRevenue: data.totalRevenue,
           }));
         }
-        if (json.totalOrders !== undefined) {
+        if (data.totalOrders !== undefined) {
           setDashboardData((prevData) => ({
             ...prevData,
-            totalOrders: json.totalOrders,
+            totalOrders: data.totalOrders,
           }));
         }
-        if (json.totalClients !== undefined) {
+        if (data.totalClients !== undefined) {
           setDashboardData((prevData) => ({
             ...prevData,
-            totalClients: json.totalClients,
+            totalClients: data.totalClients,
           }));
         }
       } catch (error) {
-        setError(error);
+        setError(error.response?.data?.message || error.message);
         console.error("Error fetching dashboard data:", error);
       } finally {
         setLoading(false);
@@ -117,7 +111,7 @@ function App() {
     };
 
     fetchDashboardData();
-  }, []); // Empty dependency array means this effect runs once on mount
+  }, []);
 
   // The table state and handlers are now moved to TableManagement component
 

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import axiosInstance from "../api/axios";
 
 const getStatusIcon = (status) => {
   switch (status) {
@@ -17,10 +18,17 @@ const OrderLine = () => {
   const [orders, setOrders] = useState([]);
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/orders?limit=20")
-      .then((res) => res.json())
-      .then((data) => {
+    axiosInstance
+      .get("/api/orders?limit=20")
+      .then((response) => {
+        const data = response.data;
         setOrders(Array.isArray(data) ? data : data.orders || []);
+      })
+      .catch((err) => {
+        console.error(
+          "Failed to fetch orders for OrderLine:",
+          err.response?.data?.message || err.message
+        );
       });
   }, []);
 

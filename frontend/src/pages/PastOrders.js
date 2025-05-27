@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axiosInstance from "../api/axios"; // Import axiosInstance
 
 function PastOrders() {
   const [orders, setOrders] = useState([]);
@@ -8,16 +9,23 @@ function PastOrders() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/orders?limit=20")
-      .then((res) => res.json())
-      .then((data) => {
+    // Use axiosInstance for API call
+    axiosInstance
+      .get("/api/orders?limit=20")
+      .then((response) => {
+        const data = response.data;
         // Handle both array and object response
         setOrders(Array.isArray(data) ? data : data.orders || []);
         setLoading(false);
       })
       .catch((err) => {
-        setError("Failed to fetch past orders");
+        setError(
+          `Failed to fetch past orders: ${
+            err.response?.data?.message || err.message
+          }`
+        );
         setLoading(false);
+        console.error("Failed to fetch past orders:", err);
       });
   }, []);
 

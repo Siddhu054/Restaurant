@@ -1,181 +1,75 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import axiosInstance from "../api/axios"; // Import axiosInstance
 import "./Checkout.css";
 
 function Checkout() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { orderData } = location.state || {};
+  const orderData = location.state?.orderData; // Get order data from navigation state
 
-  const [customerDetails, setCustomerDetails] = useState({
-    name: "",
-    phone: "",
-    address: "",
-  });
-
-  const [deliveryInfo, setDeliveryInfo] = useState({
-    estimatedTime: orderData?.deliveryInfo?.estimatedTime || "42", // Use provided estimated time or default
-    cookingInstructions: orderData?.deliveryInfo?.cookingInstructions || "", // Use provided instructions or empty
-  });
-
-  const [errors, setErrors] = useState({});
+  const [paymentMethod, setPaymentMethod] = useState("");
+  const [notes, setNotes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(null);
 
-  const [tables, setTables] = useState([]); // State to store fetched tables
-  const [selectedTable, setSelectedTable] = useState(""); // State to store the selected table ID
-  const [tablesLoading, setTablesLoading] = useState(true); // Loading state for tables
-  const [tablesError, setTablesError] = useState(null); // Error state for tables
-
   useEffect(() => {
-    // Redirect to menu if no order data
+    // If no order data, redirect back to POS or Menu
     if (!orderData || !orderData.items || orderData.items.length === 0) {
-      navigate("/menu", { replace: true });
-    }
-    // Initialize customer details if they were part of orderData (e.g., from a previous step/draft)
-    if (orderData?.customerDetails) {
-      setCustomerDetails(orderData.customerDetails);
+      navigate("/pos"); // Redirect to POS if no order data
     }
   }, [orderData, navigate]);
 
-  // Effect to fetch tables when component mounts
-  useEffect(() => {
-    const fetchTables = async () => {
-      setTablesLoading(true);
-      setTablesError(null);
-      try {
-        const response = await fetch("http://localhost:5000/api/tables");
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        // Filter for available tables for selection
-        const availableTables = data.filter(
-          (table) => table.status === "available"
-        );
-        setTables(availableTables);
-        // Automatically select the first available table if any
-        if (availableTables.length > 0) {
-          setSelectedTable(availableTables[0]._id);
-        }
-      } catch (err) {
-        setTablesError("Failed to fetch tables");
-        console.error("Error fetching tables:", err);
-      } finally {
-        setTablesLoading(false);
-      }
-    };
-
-    // Fetch tables only if order type is dine-in
-    if (orderData?.orderType === "dine-in") {
-      fetchTables();
-    }
-  }, [orderData]); // Rerun if orderData changes (specifically orderType)
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setCustomerDetails((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-    // Clear error when user starts typing
-    if (errors[name]) {
-      setErrors((prev) => ({
-        ...prev,
-        [name]: "",
-      }));
-    }
-  };
-
-  const handleDeliveryInfoChange = (e) => {
-    const { name, value } = e.target;
-    setDeliveryInfo((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const validateForm = () => {
-    const newErrors = {};
-    if (!customerDetails.name.trim()) {
-      newErrors.name = "Name is required";
-    }
-    if (!customerDetails.phone.trim()) {
-      newErrors.phone = "Phone number is required";
-    } else if (!/^\d{10}$/.test(customerDetails.phone)) {
-      newErrors.phone = "Please enter a valid 10-digit phone number";
-    }
-    if (
-      orderData.orderType === "take-away" &&
-      !customerDetails.address.trim()
-    ) {
-      newErrors.address = "Delivery address is required for take-away orders";
-    }
-    // Add validation for table selection for dine-in orders
-    if (orderData?.orderType === "dine-in" && !selectedTable) {
-      newErrors.table = "Please select a table for dine-in order.";
-    }
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true); // Disable button on submit
     setSubmitError(null); // Clear previous errors
 
-    if (validateForm()) {
-      setIsSubmitting(true); // Disable button and show loading
+    if (!paymentMethod) {
+      setSubmitError("Please select a payment method.");
+      setIsSubmitting(false);
+      return;
+    }
 
-      console.log("orderData.items before submit:", orderData.items);
+    const orderSubmission = {
+      ...orderData,
+      paymentMethod,
+      notes,
+      status: "processing", // Set initial status
+    };
 
-      const orderSubmission = {
-        // Use _id for each item as expected by the backend
-        items: orderData.items.map((item) => ({
-          _id: item._id || item.id,
-          quantity: item.quantity,
-          price: item.price,
-        })),
-        orderType: orderData.orderType, // Send order type
-        customerDetails: customerDetails, // Send customer details
-        deliveryInfo: {
-          estimatedTime: deliveryInfo.estimatedTime, // Send estimated time
-          cookingInstructions: deliveryInfo.cookingInstructions, // Send cooking instructions
-          deliveryCharge: orderData.deliveryCharge, // Include delivery charge from initial calculation
-          taxes: orderData.taxes, // Include taxes from initial calculation
-        },
-        // Include table ID only if order type is dine-in
-        ...(orderData.orderType === "dine-in" && { table: selectedTable }),
-      };
+    // Ensure correct structure for items array for backend
+    if (orderSubmission.items && Array.isArray(orderSubmission.items)) {
+      orderSubmission.items = orderSubmission.items.map((item) => ({
+        menuItem: item.id, // Assuming the backend expects 'menuItem' as the ID
+        quantity: item.quantity,
+        // Add other relevant item details if needed by backend
+      }));
+    }
 
-      console.log("Submitting order data to backend:", orderSubmission); // Log data being sent
+    // Log data being sent
+    console.log("Submitting order:", orderSubmission);
 
-      try {
-        const response = await fetch("http://localhost:5000/api/orders", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(orderSubmission),
-        });
+    try {
+      // Use axiosInstance for API call
+      const { data } = await axiosInstance.post("/api/orders", orderSubmission);
 
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(
-            errorData.message || `HTTP error! status: ${response.status}`
-          );
-        }
+      console.log("Order successfully submitted:", data); // Log confirmed order from backend
 
-        const confirmedOrder = await response.json();
-        console.log("Order successfully submitted:", confirmedOrder); // Log confirmed order from backend
-
+      if (data.success) {
         // Navigate to order confirmation page with the confirmed order data
-        navigate("/order-confirmation", { state: { order: confirmedOrder } });
-      } catch (err) {
-        console.error("Error submitting order:", err);
-        setSubmitError(`Failed to place order: ${err.message}`);
-      } finally {
-        setIsSubmitting(false); // Enable button
+        navigate("/order-confirmation", { state: { order: data.order } });
+      } else {
+        // Handle backend specific errors
+        setSubmitError(data.message || "Failed to place order");
       }
+    } catch (err) {
+      console.error("Error submitting order:", err);
+      setSubmitError(
+        `Failed to place order: ${err.response?.data?.message || err.message}`
+      );
+    } finally {
+      setIsSubmitting(false); // Enable button
     }
   };
 
@@ -198,155 +92,60 @@ function Checkout() {
 
   return (
     <div className="checkout-container">
-      <header className="checkout-header">
-        <h2>Checkout</h2>
-        <p>Complete your order details</p>
-      </header>
+      <h2>Checkout</h2>
+      {submitError && <div className="error-message">{submitError}</div>}
 
-      <form onSubmit={handleSubmit} className="checkout-form">
-        <section className="customer-details">
-          <h3>Customer Details</h3>
-          <div className="form-group">
-            <label htmlFor="name">Full Name</label>
-            <input
-              type="text"
-              id="name"
-              name="name"
-              value={customerDetails.name}
-              onChange={handleInputChange}
-              placeholder="Enter your full name"
-              className={errors.name ? "error" : ""}
-            />
-            {errors.name && (
-              <span className="error-message">{errors.name}</span>
-            )}
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="phone">Phone Number</label>
-            <input
-              type="tel"
-              id="phone"
-              name="phone"
-              value={customerDetails.phone}
-              onChange={handleInputChange}
-              placeholder="Enter your phone number"
-              className={errors.phone ? "error" : ""}
-            />
-            {errors.phone && (
-              <span className="error-message">{errors.phone}</span>
-            )}
-          </div>
-
-          {/* Table selection for Dine-In orders */}
-          {safeOrderData.orderType === "dine-in" && (
-            <div className="form-group">
-              <label htmlFor="table-select">Select Table</label>
-              {tablesLoading ? (
-                <p>Loading tables...</p>
-              ) : tablesError ? (
-                <p className="error-message">{tablesError}</p>
-              ) : tables.length > 0 ? (
-                <select
-                  id="table-select"
-                  value={selectedTable}
-                  onChange={(e) => setSelectedTable(e.target.value)}
-                  className={errors.table ? "error" : ""}
-                >
-                  {tables.map((table) => (
-                    <option key={table._id} value={table._id}>
-                      Table {table.tableNumber}
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <p>No available tables.</p>
-              )}
-              {errors.table && (
-                <span className="error-message">{errors.table}</span>
-              )}
-            </div>
-          )}
-
-          {safeOrderData.orderType === "take-away" && (
-            <div className="form-group">
-              <label htmlFor="address">Delivery Address</label>
-              <textarea
-                id="address"
-                name="address"
-                value={customerDetails.address}
-                onChange={handleInputChange}
-                placeholder="Enter your delivery address"
-                className={errors.address ? "error" : ""}
-              />
-              {errors.address && (
-                <span className="error-message">{errors.address}</span>
-              )}
-            </div>
-          )}
-        </section>
-
-        <section className="delivery-info">
-          <h3>Delivery Information</h3>
-          <div className="estimated-time">
-            <span>Estimated Delivery Time:</span>
-            <span className="time">
-              {safeOrderData.deliveryInfo.estimatedTime || "-"} minutes
-            </span>
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="cookingInstructions">Cooking Instructions</label>
-            <textarea
-              id="cookingInstructions"
-              name="cookingInstructions"
-              value={deliveryInfo.cookingInstructions}
-              onChange={handleDeliveryInfoChange}
-              placeholder="Any special instructions for cooking?"
-            />
-          </div>
-        </section>
-
-        <section className="order-summary">
-          <h3>Order Summary</h3>
-          <div className="order-info-line">
-            <span>Order Type:</span>
-            <span>{safeOrderData.orderType}</span>
-          </div>
-          {safeOrderData.items.map((item) => (
-            <div key={item._id} className="order-item">
-              <span>
-                {item.quantity}x {item.name}
-              </span>
-              <span>₹{(Number(item.price) * item.quantity).toFixed(2)}</span>
-            </div>
+      {/* Order Summary */}
+      <div className="order-summary">
+        <h3>Order Summary</h3>
+        <ul>
+          {safeOrderData.items.map((item, index) => (
+            <li key={item.id || index}>
+              {item.quantity} x {item.name} - ${item.price.toFixed(2)}
+            </li>
           ))}
-          <div className="order-info-line">
-            <span>Item Total:</span>
-            <span>₹{safeOrderData.itemTotal.toFixed(2)}</span>
-          </div>
-          <div className="order-info-line">
-            <span>Delivery Charge:</span>
-            <span>₹{safeOrderData.deliveryCharge.toFixed(2)}</span>
-          </div>
-          <div className="order-info-line">
-            <span>Taxes:</span>
-            <span>₹{safeOrderData.taxes.toFixed(2)}</span>
-          </div>
-          <div className="order-total">
-            <span>Grand Total:</span>
-            <span>₹{safeOrderData.grandTotal.toFixed(2)}</span>
-          </div>
-        </section>
+        </ul>
+        <div className="totals">
+          <p>Subtotal: ${safeOrderData.itemTotal.toFixed(2)}</p>
+          <p>Delivery: ${safeOrderData.deliveryCharge.toFixed(2)}</p>
+          <p>Taxes: ${safeOrderData.taxes.toFixed(2)}</p>
+          <p>Grand Total: ${safeOrderData.grandTotal.toFixed(2)}</p>
+        </div>
+      </div>
 
-        {submitError && (
-          <div className="submit-error-message">{submitError}</div>
-        )}
+      {/* Payment Method Selection */}
+      <div className="payment-method">
+        <h3>Payment Method</h3>
+        <select
+          value={paymentMethod}
+          onChange={(e) => setPaymentMethod(e.target.value)}
+          required
+        >
+          <option value="">Select Payment Method</option>
+          <option value="cash">Cash</option>
+          <option value="card">Card</option>
+          <option value="online">Online Payment</option>
+        </select>
+      </div>
 
-        <button type="submit" className="submit-button" disabled={isSubmitting}>
-          {isSubmitting ? "Placing Order..." : "Place Order"}
-        </button>
-      </form>
+      {/* Notes/Instructions (Optional) */}
+      <div className="order-notes">
+        <h3>Notes/Instructions</h3>
+        <textarea
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          placeholder="Add any special instructions or notes..."
+        ></textarea>
+      </div>
+
+      {/* Submit Button */}
+      <button
+        onClick={handleSubmit}
+        disabled={isSubmitting || !paymentMethod}
+        className="submit-order-btn"
+      >
+        {isSubmitting ? "Processing..." : "Place Order"}
+      </button>
     </div>
   );
 }
