@@ -19,19 +19,16 @@ app.get("/api/dashboard/test", (req, res) => {
 });
 // -------------------------------
 
-// MongoDB Connection
+// Debug: Print MongoDB URI (optional — for troubleshooting on Render logs)
+console.log("Connecting to MongoDB URI:", process.env.MONGODB_URI);
+
+// MongoDB Connection (REMOVE fallback to localhost)
 mongoose
-  .connect(
-    process.env.MONGODB_URI || "mongodb://localhost:27017/restaurant-pos",
-    {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    }
-  )
+  .connect(process.env.MONGODB_URI)
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
-// Routes (to be added)
+// Routes
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/tables", require("./routes/tables"));
 app.use("/api/orders", require("./routes/orders"));
