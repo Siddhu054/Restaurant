@@ -126,7 +126,9 @@ router.put("/:id", async (req, res) => {
   try {
     const order = await Order.findById(req.params.id);
     if (order == null) {
-      return res.status(404).json({ message: "Cannot find order" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Cannot find order" });
     }
 
     // Update fields based on request body
@@ -136,10 +138,10 @@ router.put("/:id", async (req, res) => {
     // Add other fields to update as needed (e.g., assignedChef, cookingInstructions)
 
     const updatedOrder = await order.save({ validateBeforeSave: false });
-    res.json(updatedOrder);
+    res.json({ success: true, message: "Order updated", order: updatedOrder });
   } catch (err) {
     console.error("Error updating order:", err);
-    res.status(400).json({ message: err.message });
+    res.status(400).json({ success: false, message: err.message });
   }
 });
 
@@ -148,14 +150,19 @@ router.put("/:id/assign-chef", async (req, res) => {
   try {
     const { chefId } = req.body;
     const order = await Order.findById(req.params.id);
-    if (!order) return res.status(404).json({ message: "Order not found" });
+    if (!order)
+      return res
+        .status(404)
+        .json({ success: false, message: "Order not found" });
 
     order.assignedChef = chefId;
     await order.save();
 
-    res.json({ message: "Chef assigned successfully", order });
+    res.json({ success: true, message: "Chef assigned successfully", order });
   } catch (err) {
-    res.status(500).json({ message: "Server error", error: err.message });
+    res
+      .status(500)
+      .json({ success: false, message: "Server error", error: err.message });
   }
 });
 
