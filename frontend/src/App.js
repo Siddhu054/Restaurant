@@ -1,6 +1,12 @@
 import React, { useEffect, useState } from "react";
 import "./App.css";
-import { BrowserRouter as Router, Route, Routes, Link } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Route,
+  Routes,
+  Link,
+  useLocation,
+} from "react-router-dom";
 import axiosInstance from "./api/axios";
 import Dashboard from "./pages/Dashboard";
 import OrderManagement from "./pages/OrderManagement";
@@ -30,88 +36,92 @@ function App() {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const location = useLocation();
+
+  const fetchDashboardData = async () => {
+    try {
+      const { data } = await axiosInstance.get("/api/dashboard/summary");
+      console.log("Fetched data:", data);
+
+      // Defensive check for required fields and map to state
+      if (data.orderSummary) {
+        setDashboardData((prevData) => ({
+          ...prevData,
+          orderSummary: data.orderSummary,
+        }));
+      } else {
+        console.warn("orderSummary is undefined in fetched data", data);
+        setDashboardData((prevData) => ({ ...prevData, orderSummary: {} }));
+      }
+
+      if (data.dailyRevenue) {
+        setDashboardData((prevData) => ({
+          ...prevData,
+          dailyRevenue: data.dailyRevenue,
+        }));
+      } else {
+        console.warn("dailyRevenue is undefined in fetched data", data);
+        setDashboardData((prevData) => ({ ...prevData, dailyRevenue: [] }));
+      }
+
+      if (data.tables) {
+        setDashboardData((prevData) => ({
+          ...prevData,
+          tables: data.tables,
+        }));
+      } else {
+        console.warn("tables is undefined in fetched data", data);
+        setDashboardData((prevData) => ({ ...prevData, tables: [] }));
+      }
+
+      if (data.chefOrders) {
+        setDashboardData((prevData) => ({
+          ...prevData,
+          chefOrders: data.chefOrders,
+        }));
+      } else {
+        console.warn("chefOrders is undefined in fetched data", data);
+        setDashboardData((prevData) => ({ ...prevData, chefOrders: [] }));
+      }
+
+      if (data.totalChefs !== undefined) {
+        setDashboardData((prevData) => ({
+          ...prevData,
+          totalChefs: data.totalChefs,
+        }));
+      }
+      if (data.totalRevenue !== undefined) {
+        setDashboardData((prevData) => ({
+          ...prevData,
+          totalRevenue: data.totalRevenue,
+        }));
+      }
+      if (data.totalOrders !== undefined) {
+        setDashboardData((prevData) => ({
+          ...prevData,
+          totalOrders: data.totalOrders,
+        }));
+      }
+      if (data.totalClients !== undefined) {
+        setDashboardData((prevData) => ({
+          ...prevData,
+          totalClients: data.totalClients,
+        }));
+      }
+    } catch (error) {
+      setError(error.response?.data?.message || error.message);
+      console.error("Error fetching dashboard data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        const { data } = await axiosInstance.get("/api/dashboard/summary");
-        console.log("Fetched data:", data);
-
-        // Defensive check for required fields and map to state
-        if (data.orderSummary) {
-          setDashboardData((prevData) => ({
-            ...prevData,
-            orderSummary: data.orderSummary,
-          }));
-        } else {
-          console.warn("orderSummary is undefined in fetched data", data);
-          setDashboardData((prevData) => ({ ...prevData, orderSummary: {} }));
-        }
-
-        if (data.dailyRevenue) {
-          setDashboardData((prevData) => ({
-            ...prevData,
-            dailyRevenue: data.dailyRevenue,
-          }));
-        } else {
-          console.warn("dailyRevenue is undefined in fetched data", data);
-          setDashboardData((prevData) => ({ ...prevData, dailyRevenue: [] }));
-        }
-
-        if (data.tables) {
-          setDashboardData((prevData) => ({
-            ...prevData,
-            tables: data.tables,
-          }));
-        } else {
-          console.warn("tables is undefined in fetched data", data);
-          setDashboardData((prevData) => ({ ...prevData, tables: [] }));
-        }
-
-        if (data.chefOrders) {
-          setDashboardData((prevData) => ({
-            ...prevData,
-            chefOrders: data.chefOrders,
-          }));
-        } else {
-          console.warn("chefOrders is undefined in fetched data", data);
-          setDashboardData((prevData) => ({ ...prevData, chefOrders: [] }));
-        }
-
-        if (data.totalChefs !== undefined) {
-          setDashboardData((prevData) => ({
-            ...prevData,
-            totalChefs: data.totalChefs,
-          }));
-        }
-        if (data.totalRevenue !== undefined) {
-          setDashboardData((prevData) => ({
-            ...prevData,
-            totalRevenue: data.totalRevenue,
-          }));
-        }
-        if (data.totalOrders !== undefined) {
-          setDashboardData((prevData) => ({
-            ...prevData,
-            totalOrders: data.totalOrders,
-          }));
-        }
-        if (data.totalClients !== undefined) {
-          setDashboardData((prevData) => ({
-            ...prevData,
-            totalClients: data.totalClients,
-          }));
-        }
-      } catch (error) {
-        setError(error.response?.data?.message || error.message);
-        console.error("Error fetching dashboard data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchDashboardData();
-  }, []);
+    if (location.pathname === "/dashboard" || location.pathname === "/") {
+      fetchDashboardData();
+    }
+    // eslint-disable-next-line
+  }, [location.pathname]);
 
   // The table state and handlers are now moved to TableManagement component
 
