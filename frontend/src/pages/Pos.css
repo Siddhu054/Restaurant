@@ -2,6 +2,7 @@
   padding: 20px;
   max-width: 1200px;
   margin: 0 auto;
+  overflow-x: auto;
 }
 
 .pos-container h2 {
@@ -14,6 +15,7 @@
   display: grid;
   grid-template-columns: 1fr 350px;
   gap: 20px;
+  min-width: 1200px;
 }
 
 /* Menu Items Section */
@@ -22,6 +24,7 @@
   border-radius: 12px;
   padding: 20px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  min-width: 350px;
 }
 
 .menu-category {
@@ -37,7 +40,7 @@
 
 .menu-items-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(5, 1fr);
   gap: 15px;
 }
 
@@ -88,6 +91,7 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   position: sticky;
   top: 20px;
+  min-width: 350px;
 }
 
 .cart-items {
@@ -274,4 +278,14 @@
 .swipe-arrow {
   margin-right: 10px;
   font-size: 1.2rem;
+}
+
+/* Remove or override any media queries that stack columns */
+@media (max-width: 1200px) {
+  .pos-layout {
+    min-width: 900px;
+  }
+  .menu-items-grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
 }
