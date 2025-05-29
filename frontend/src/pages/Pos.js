@@ -308,6 +308,7 @@ function Pos() {
   return (
     <div className="pos-container">
       <h2>Point of Sale</h2>
+
       <div className="pos-layout">
         <div className="item-browsing-area">
           <h3>Menu Items</h3>
@@ -385,6 +386,7 @@ function Pos() {
             </>
           )}
 
+          {/* Order Type and Table Selection */}
           <div className="order-type-selector">
             <button
               className={`order-type-button ${
@@ -428,6 +430,7 @@ function Pos() {
             </div>
           )}
 
+          {/* Customer Details Input */}
           <div className="customer-details">
             <h3>Customer Details</h3>
             <input
@@ -463,6 +466,7 @@ function Pos() {
             )}
           </div>
 
+          {/* Additional Order Info Input */}
           <div className="additional-info">
             <h3>Additional Info</h3>
             {orderType === "dine_in" && (
@@ -504,27 +508,28 @@ function Pos() {
                 </div>
               ))}
             </div>
-          </div>
 
-          <div
-            className={`swipe-to-order-container ${
-              cartItems.length === 0 ? "disabled" : ""
-            }`}
-            onTouchStart={onButtonTouchStart}
-            onTouchMove={onButtonTouchMove}
-            onTouchEnd={onButtonTouchEnd}
-          >
+            {/* Swipe to Order Button */}
             <div
-              className="swipe-to-order-button"
-              style={{
-                transform: `translateX(${buttonSwipeState.currentTranslateX}px)`,
-                transition: buttonSwipeState.isSwiping
-                  ? "none"
-                  : "transform 0.3s ease-out",
-              }}
+              className={`swipe-to-order-container ${
+                cartItems.length === 0 ? "disabled" : ""
+              }`}
+              onTouchStart={onButtonTouchStart}
+              onTouchMove={onButtonTouchMove}
+              onTouchEnd={onButtonTouchEnd}
             >
-              <span className="swipe-arrow">→</span>
-              Swipe to Order
+              <div
+                className="swipe-to-order-button"
+                style={{
+                  transform: `translateX(${buttonSwipeState.currentTranslateX}px)`,
+                  transition: buttonSwipeState.isSwiping
+                    ? "none"
+                    : "transform 0.3s ease-out",
+                }}
+              >
+                <span className="swipe-arrow">→</span>
+                Swipe to Order
+              </div>
             </div>
           </div>
         </div>
