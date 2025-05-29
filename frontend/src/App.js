@@ -25,8 +25,9 @@ import {
   FaHistory,
 } from "react-icons/fa";
 
-function App() {
-  // Assuming dashboardData and orderSummary are still needed for the dashboard, keeping the state and fetch for now
+// Create a new component that uses useLocation
+function AppContent() {
+  const location = useLocation();
   const [dashboardData, setDashboardData] = useState({});
   const [orderSummary, setOrderSummary] = useState({
     totalOrders: 0,
@@ -36,14 +37,12 @@ function App() {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const location = useLocation();
 
   const fetchDashboardData = async () => {
     try {
       const { data } = await axiosInstance.get("/api/dashboard/summary");
       console.log("Fetched data:", data);
 
-      // Defensive check for required fields and map to state
       if (data.orderSummary) {
         setDashboardData((prevData) => ({
           ...prevData,
@@ -123,68 +122,73 @@ function App() {
     // eslint-disable-next-line
   }, [location.pathname]);
 
-  // The table state and handlers are now moved to TableManagement component
+  return (
+    <div className="app-container">
+      {/* Sidebar */}
+      <aside className="sidebar">
+        <div className="sidebar-logo"></div>
+        <nav className="sidebar-nav">
+          <Link to="/dashboard" className="nav-btn" title="Analytics">
+            <FaChartBar size={30} />
+          </Link>
+          <Link to="/tables" className="nav-btn" title="Tables">
+            <FaChair size={30} />
+          </Link>
+          <Link to="/orders" className="nav-btn" title="Orders">
+            <FaBook size={30} />
+          </Link>
+          <Link to="/pos" className="nav-btn" title="POS">
+            <FaCreditCard size={30} />
+          </Link>
+          <Link to="/past-orders" className="nav-btn" title="Past Orders">
+            <FaHistory size={30} />
+          </Link>
+        </nav>
+      </aside>
 
+      {/* Main Content with Routes */}
+      <main className="main-content">
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <Dashboard
+                dashboardData={dashboardData}
+                orderSummary={orderSummary}
+                loading={loading}
+                error={error}
+              />
+            }
+          />
+          <Route
+            path="/dashboard"
+            element={
+              <Dashboard
+                dashboardData={dashboardData}
+                orderSummary={orderSummary}
+                loading={loading}
+                error={error}
+              />
+            }
+          />
+          <Route path="/orders" element={<OrderManagement />} />
+          <Route path="/tables" element={<TableManagement />} />
+          <Route path="/menu" element={<Menu />} />
+          <Route path="/checkout" element={<Checkout />} />
+          <Route path="/order-confirmation" element={<OrderConfirmation />} />
+          <Route path="/pos" element={<Pos />} />
+          <Route path="/past-orders" element={<PastOrders />} />
+        </Routes>
+      </main>
+    </div>
+  );
+}
+
+// Main App component that provides the Router
+function App() {
   return (
     <Router>
-      <div className="app-container">
-        {/* Sidebar */}
-        <aside className="sidebar">
-          <div className="sidebar-logo"></div>
-          <nav className="sidebar-nav">
-            <Link to="/dashboard" className="nav-btn" title="Analytics">
-              <FaChartBar size={30} />
-            </Link>
-            <Link to="/tables" className="nav-btn" title="Tables">
-              <FaChair size={30} />
-            </Link>
-            <Link to="/orders" className="nav-btn" title="Orders">
-              <FaBook size={30} />
-            </Link>
-            <Link to="/pos" className="nav-btn" title="POS">
-              <FaCreditCard size={30} />
-            </Link>
-            <Link to="/past-orders" className="nav-btn" title="Past Orders">
-              <FaHistory size={30} />
-            </Link>
-          </nav>
-        </aside>
-
-        {/* Main Content with Routes */}
-        <main className="main-content">
-          <Routes>
-            <Route
-              path="/"
-              element={
-                <Dashboard
-                  dashboardData={dashboardData}
-                  orderSummary={orderSummary}
-                  loading={loading}
-                  error={error}
-                />
-              }
-            />
-            <Route
-              path="/dashboard"
-              element={
-                <Dashboard
-                  dashboardData={dashboardData}
-                  orderSummary={orderSummary}
-                  loading={loading}
-                  error={error}
-                />
-              }
-            />
-            <Route path="/orders" element={<OrderManagement />} />
-            <Route path="/tables" element={<TableManagement />} />
-            <Route path="/menu" element={<Menu />} />
-            <Route path="/checkout" element={<Checkout />} />
-            <Route path="/order-confirmation" element={<OrderConfirmation />} />
-            <Route path="/pos" element={<Pos />} />
-            <Route path="/past-orders" element={<PastOrders />} />
-          </Routes>
-        </main>
-      </div>
+      <AppContent />
     </Router>
   );
 }
