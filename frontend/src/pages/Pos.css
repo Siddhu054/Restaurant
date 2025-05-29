@@ -9,16 +9,6 @@
   color: #333;
 }
 
-/* Main card container */
-.pos-main {
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  padding: 30px 24px;
-  display: flex;
-  flex-direction: column;
-}
-
 /* Main layout */
 .pos-layout {
   display: grid;
@@ -28,11 +18,10 @@
 
 /* Menu Items Section */
 .item-browsing-area {
-  /* Remove card styling */
-  padding: 0;
-  background: none;
-  border-radius: 0;
-  box-shadow: none;
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .menu-category {
@@ -93,13 +82,12 @@
 
 /* Cart Section */
 .cart-overview {
-  /* Remove card styling */
-  padding: 0;
-  background: none;
-  border-radius: 0;
-  box-shadow: none;
-  position: static;
-  top: auto;
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 20px;
 }
 
 .cart-items {
