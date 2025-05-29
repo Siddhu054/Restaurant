@@ -308,223 +308,230 @@ function Pos() {
   return (
     <div className="pos-container">
       <h2>Point of Sale</h2>
-      <div className="pos-layout">
-        <div className="item-browsing-area">
-          <h3>Menu Items</h3>
-          {Object.entries(menuItemsByCategory).map(([category, items]) => (
-            <div key={category} className="menu-category">
-              <h4>{category.replace(/_/g, " ").toUpperCase()}</h4>
-              <div className="menu-items-grid">
-                {items.map((item) => (
-                  <div
-                    key={item._id}
-                    className="menu-item"
-                    onClick={() => handleAddItem(item)}
-                  >
-                    {item.image && (
-                      <img
-                        src={item.image}
-                        alt={item.name}
-                        className="menu-item-image"
-                      />
-                    )}
-                    <div className="menu-item-details">
-                      <h5>{item.name}</h5>
-                      <p className="menu-item-price">
-                        ${item.price.toFixed(2)}
-                      </p>
-                      {item.description && (
-                        <p className="menu-item-description">
-                          {item.description}
-                        </p>
+      <div className="pos-main">
+        <div className="pos-layout">
+          <div className="item-browsing-area">
+            <h3>Menu Items</h3>
+            {Object.entries(menuItemsByCategory).map(([category, items]) => (
+              <div key={category} className="menu-category">
+                <h4>{category.replace(/_/g, " ").toUpperCase()}</h4>
+                <div className="menu-items-grid">
+                  {items.map((item) => (
+                    <div
+                      key={item._id}
+                      className="menu-item"
+                      onClick={() => handleAddItem(item)}
+                    >
+                      {item.image && (
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          className="menu-item-image"
+                        />
                       )}
+                      <div className="menu-item-details">
+                        <h5>{item.name}</h5>
+                        <p className="menu-item-price">
+                          ${item.price.toFixed(2)}
+                        </p>
+                        {item.description && (
+                          <p className="menu-item-description">
+                            {item.description}
+                          </p>
+                        )}
+                      </div>
                     </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="cart-overview">
+            <h3>Cart</h3>
+            {cartItems.length === 0 ? (
+              <p>Cart is empty</p>
+            ) : (
+              <>
+                <ul className="cart-items">
+                  {cartItems.map((item) => (
+                    <li key={item.id} className="cart-item">
+                      <div className="cart-item-details">
+                        <span className="cart-item-name">{item.name}</span>
+                        <span className="cart-item-price">
+                          ${(item.price * item.quantity).toFixed(2)}
+                        </span>
+                      </div>
+                      <div className="cart-item-quantity">
+                        <button
+                          onClick={() =>
+                            handleUpdateQuantity(item.id, item.quantity - 1)
+                          }
+                        >
+                          -
+                        </button>
+                        <span>{item.quantity}</span>
+                        <button
+                          onClick={() =>
+                            handleUpdateQuantity(item.id, item.quantity + 1)
+                          }
+                        >
+                          +
+                        </button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+                <div className="cart-total">
+                  Total: ${totalPrice.toFixed(2)}
+                </div>
+              </>
+            )}
+
+            <div className="order-type-selector">
+              <button
+                className={`order-type-button ${
+                  orderType === "dine_in" ? "active" : ""
+                }`}
+                onClick={() => setOrderType("dine_in")}
+              >
+                Dine In
+              </button>
+              <button
+                className={`order-type-button ${
+                  orderType === "take_away" ? "active" : ""
+                }`}
+                onClick={() => setOrderType("take_away")}
+              >
+                Take Away
+              </button>
+            </div>
+
+            {orderType === "dine_in" && (
+              <div className="table-selector">
+                <h3>Select Table</h3>
+                {loadingTables ? (
+                  <p>Loading tables...</p>
+                ) : errorTables ? (
+                  <p>Error loading tables: {errorTables}</p>
+                ) : tables.length > 0 ? (
+                  <select
+                    value={selectedTable || ""}
+                    onChange={(e) => setSelectedTable(e.target.value)}
+                  >
+                    {tables.map((table) => (
+                      <option key={table._id} value={table._id}>
+                        Table {table.tableNumber}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <p>No available tables.</p>
+                )}
+              </div>
+            )}
+
+            <div className="customer-details">
+              <h3>Customer Details</h3>
+              <input
+                type="text"
+                placeholder="Name"
+                value={customerDetails.name}
+                onChange={(e) =>
+                  setCustomerDetails({
+                    ...customerDetails,
+                    name: e.target.value,
+                  })
+                }
+              />
+              <input
+                type="text"
+                placeholder="Phone"
+                value={customerDetails.phone}
+                onChange={(e) =>
+                  setCustomerDetails({
+                    ...customerDetails,
+                    phone: e.target.value,
+                  })
+                }
+              />
+              {orderType === "take_away" && (
+                <textarea
+                  placeholder="Delivery Address"
+                  value={customerDetails.address}
+                  onChange={(e) =>
+                    setCustomerDetails({
+                      ...customerDetails,
+                      address: e.target.value,
+                    })
+                  }
+                />
+              )}
+            </div>
+
+            <div className="additional-info">
+              <h3>Additional Info</h3>
+              {orderType === "dine_in" && (
+                <input
+                  type="text"
+                  placeholder="Estimated Time (e.g. 30 minutes)"
+                  value={orderExtraInfo.estimatedTime}
+                  onChange={(e) =>
+                    setOrderExtraInfo({
+                      ...orderExtraInfo,
+                      estimatedTime: e.target.value,
+                    })
+                  }
+                />
+              )}
+              <textarea
+                placeholder="Cooking Instructions"
+                value={orderExtraInfo.cookingInstructions}
+                onChange={(e) =>
+                  setOrderExtraInfo({
+                    ...orderExtraInfo,
+                    cookingInstructions: e.target.value,
+                  })
+                }
+              />
+            </div>
+
+            <div className="keyboard-input">
+              <h3>Keyboard Input</h3>
+              <input type="text" value={input} readOnly />
+              <div className="keyboard-keys">
+                {keyboardLayout.map((row, rowIndex) => (
+                  <div key={rowIndex} className="keyboard-row">
+                    {row.map((key) => (
+                      <button key={key} onClick={() => handleKeyPress(key)}>
+                        {key}
+                      </button>
+                    ))}
                   </div>
                 ))}
               </div>
             </div>
-          ))}
-        </div>
 
-        <div className="cart-overview">
-          <h3>Cart</h3>
-          {cartItems.length === 0 ? (
-            <p>Cart is empty</p>
-          ) : (
-            <>
-              <ul className="cart-items">
-                {cartItems.map((item) => (
-                  <li key={item.id} className="cart-item">
-                    <div className="cart-item-details">
-                      <span className="cart-item-name">{item.name}</span>
-                      <span className="cart-item-price">
-                        ${(item.price * item.quantity).toFixed(2)}
-                      </span>
-                    </div>
-                    <div className="cart-item-quantity">
-                      <button
-                        onClick={() =>
-                          handleUpdateQuantity(item.id, item.quantity - 1)
-                        }
-                      >
-                        -
-                      </button>
-                      <span>{item.quantity}</span>
-                      <button
-                        onClick={() =>
-                          handleUpdateQuantity(item.id, item.quantity + 1)
-                        }
-                      >
-                        +
-                      </button>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-              <div className="cart-total">Total: ${totalPrice.toFixed(2)}</div>
-            </>
-          )}
-
-          <div className="order-type-selector">
-            <button
-              className={`order-type-button ${
-                orderType === "dine_in" ? "active" : ""
-              }`}
-              onClick={() => setOrderType("dine_in")}
-            >
-              Dine In
-            </button>
-            <button
-              className={`order-type-button ${
-                orderType === "take_away" ? "active" : ""
-              }`}
-              onClick={() => setOrderType("take_away")}
-            >
-              Take Away
-            </button>
-          </div>
-
-          {orderType === "dine_in" && (
-            <div className="table-selector">
-              <h3>Select Table</h3>
-              {loadingTables ? (
-                <p>Loading tables...</p>
-              ) : errorTables ? (
-                <p>Error loading tables: {errorTables}</p>
-              ) : tables.length > 0 ? (
-                <select
-                  value={selectedTable || ""}
-                  onChange={(e) => setSelectedTable(e.target.value)}
-                >
-                  {tables.map((table) => (
-                    <option key={table._id} value={table._id}>
-                      Table {table.tableNumber}
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <p>No available tables.</p>
-              )}
-            </div>
-          )}
-
-          <div className="customer-details">
-            <h3>Customer Details</h3>
-            <input
-              type="text"
-              placeholder="Name"
-              value={customerDetails.name}
-              onChange={(e) =>
-                setCustomerDetails({ ...customerDetails, name: e.target.value })
-              }
-            />
-            <input
-              type="text"
-              placeholder="Phone"
-              value={customerDetails.phone}
-              onChange={(e) =>
-                setCustomerDetails({
-                  ...customerDetails,
-                  phone: e.target.value,
-                })
-              }
-            />
-            {orderType === "take_away" && (
-              <textarea
-                placeholder="Delivery Address"
-                value={customerDetails.address}
-                onChange={(e) =>
-                  setCustomerDetails({
-                    ...customerDetails,
-                    address: e.target.value,
-                  })
-                }
-              />
-            )}
-          </div>
-
-          <div className="additional-info">
-            <h3>Additional Info</h3>
-            {orderType === "dine_in" && (
-              <input
-                type="text"
-                placeholder="Estimated Time (e.g. 30 minutes)"
-                value={orderExtraInfo.estimatedTime}
-                onChange={(e) =>
-                  setOrderExtraInfo({
-                    ...orderExtraInfo,
-                    estimatedTime: e.target.value,
-                  })
-                }
-              />
-            )}
-            <textarea
-              placeholder="Cooking Instructions"
-              value={orderExtraInfo.cookingInstructions}
-              onChange={(e) =>
-                setOrderExtraInfo({
-                  ...orderExtraInfo,
-                  cookingInstructions: e.target.value,
-                })
-              }
-            />
-          </div>
-
-          <div className="keyboard-input">
-            <h3>Keyboard Input</h3>
-            <input type="text" value={input} readOnly />
-            <div className="keyboard-keys">
-              {keyboardLayout.map((row, rowIndex) => (
-                <div key={rowIndex} className="keyboard-row">
-                  {row.map((key) => (
-                    <button key={key} onClick={() => handleKeyPress(key)}>
-                      {key}
-                    </button>
-                  ))}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div
-            className={`swipe-to-order-container ${
-              cartItems.length === 0 ? "disabled" : ""
-            }`}
-            onTouchStart={onButtonTouchStart}
-            onTouchMove={onButtonTouchMove}
-            onTouchEnd={onButtonTouchEnd}
-          >
             <div
-              className="swipe-to-order-button"
-              style={{
-                transform: `translateX(${buttonSwipeState.currentTranslateX}px)`,
-                transition: buttonSwipeState.isSwiping
-                  ? "none"
-                  : "transform 0.3s ease-out",
-              }}
+              className={`swipe-to-order-container ${
+                cartItems.length === 0 ? "disabled" : ""
+              }`}
+              onTouchStart={onButtonTouchStart}
+              onTouchMove={onButtonTouchMove}
+              onTouchEnd={onButtonTouchEnd}
             >
-              <span className="swipe-arrow">→</span>
-              Swipe to Order
+              <div
+                className="swipe-to-order-button"
+                style={{
+                  transform: `translateX(${buttonSwipeState.currentTranslateX}px)`,
+                  transition: buttonSwipeState.isSwiping
+                    ? "none"
+                    : "transform 0.3s ease-out",
+                }}
+              >
+                <span className="swipe-arrow">→</span>
+                Swipe to Order
+              </div>
             </div>
           </div>
         </div>
