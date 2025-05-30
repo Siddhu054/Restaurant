@@ -14,8 +14,12 @@ function PastOrders() {
       .get("/api/orders?limit=20")
       .then((response) => {
         const data = response.data;
-        // Handle both array and object response
-        setOrders(Array.isArray(data) ? data : data.orders || []);
+        let fetchedOrders = Array.isArray(data) ? data : data.orders || [];
+        // Sort orders by createdAt descending (latest first)
+        fetchedOrders = [...fetchedOrders].sort(
+          (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+        );
+        setOrders(fetchedOrders);
         setLoading(false);
       })
       .catch((err) => {
