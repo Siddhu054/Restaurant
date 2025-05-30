@@ -144,10 +144,14 @@ function OrderManagement() {
     }
   };
 
-  const formatDuration = (startTime) => {
-    const now = new Date();
+  const formatDuration = (startTime, endTime, status) => {
+    let end = new Date();
+    if (status === "done" || status === "served") {
+      // Use endTime if available, otherwise fallback to now
+      end = endTime ? new Date(endTime) : end;
+    }
     const start = new Date(startTime);
-    const diffInSeconds = Math.floor((now - start) / 1000);
+    const diffInSeconds = Math.floor((end - start) / 1000);
     const hours = Math.floor(diffInSeconds / 3600);
     const minutes = Math.floor((diffInSeconds % 3600) / 60);
     const seconds = diffInSeconds % 60;
@@ -283,7 +287,11 @@ function OrderManagement() {
                     {order.type.replace("_", " ")}
                   </span>
                   <span className="order-duration">
-                    {formatDuration(order.createdAt)}
+                    {formatDuration(
+                      order.createdAt,
+                      order.endTime,
+                      order.status
+                    )}
                   </span>
                   <span className="order-status-text">
                     {order.status.replace("_", " ")}
