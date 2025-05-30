@@ -48,17 +48,20 @@ function Dashboard({ dashboardData, orderSummary, loading, error }) {
   }, [dashboardData?.dailyRevenue]);
 
   // Prepare data for the new RevenueChart
-  const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-  // Create a map from your backend data for quick lookup
-  const revenueMap = {};
-  (dashboardData?.dailyRevenue || []).forEach((item) => {
-    revenueMap[item.day] = item.totalRevenue;
-  });
-  // Always show all 7 days, fill missing with 0
-  const revenueData = dayNames.map((name, idx) => ({
-    day: name,
-    revenue: revenueMap[idx] || 0,
-  }));
+  const revenueData = useMemo(() => {
+    // Map the backend dailyRevenue array to the format expected by RevenueChart
+    const transformedData = dashboardData?.dailyRevenue
+      ? dashboardData.dailyRevenue.map((item) => ({
+          // Use the date string from the backend as the 'day' key for the chart
+          day: item.date,
+          revenue: item.totalRevenue,
+        }))
+      : [];
+
+    console.log("Generated revenueData for chart:", transformedData);
+
+    return transformedData;
+  }, [dashboardData?.dailyRevenue]); // Depend on dailyRevenue from backend
 
   // Create refs for the chart containers
   const pieContainerRef = useRef(null);
@@ -223,14 +226,20 @@ function Dashboard({ dashboardData, orderSummary, loading, error }) {
   console.log("Pie Container Size:", pieContainerSize);
   console.log("Line Container Size:", lineContainerSize);
 
-  // Calculate domain for the revenue chart XAxis - Now based on day numbers (0-6)
+  // Calculate domain for the revenue chart XAxis - This is likely not needed anymore
+  // if the chart component handles date strings directly on the XAxis.
+  // Keeping it commented out in case the chart component needs specific date formatting.
+  /*
   const revenueDomain =
-    lineData.length > 0
+    revenueData.length > 0
       ? [
-          Math.min(...lineData.map((item) => item.day)),
-          Math.max(...lineData.map((item) => item.day)),
+          // You might need to parse dates here if the chart needs numeric domain
+          // For now, assuming the chart can handle date strings as categories
+          revenueData[0].day,
+          revenueData[revenueData.length - 1].day,
         ]
-      : [0, 6]; // Default domain for days of the week (0-6)
+      : [];
+  */
 
   // Handle loading and error states at the top level
   if (loading) return <div className="main-content">Loading dashboard...</div>;
@@ -510,9 +519,9 @@ function Dashboard({ dashboardData, orderSummary, loading, error }) {
           <div className="revenue-chart" ref={lineContainerRef}>
             <h3 className="summary-title">Daily Revenue</h3>
             {revenueData.length > 0 ? (
-              <RevenueChart data={revenueData} summaryRange={summaryRange} />
+              <RevenueChart data={revenueData} />
             ) : (
-              <p>No revenue data available for the line chart.</p>
+              <p>No revenue data available for the selected range.</p>
             )}
           </div>
 
