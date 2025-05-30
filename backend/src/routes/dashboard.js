@@ -25,8 +25,29 @@ router.get("/summary", async (req, res) => {
     );
     // ------------------------------
 
-    // Total chefs (Simplified query to isolate User model issue)
-    // Check if User is valid before calling countDocuments
+    const { range = "daily" } = req.query; // Get range from query params, default to 'daily'
+    let startDate = new Date();
+
+    // Calculate start date based on the selected range
+    switch (range) {
+      case "weekly":
+        startDate.setDate(startDate.getDate() - 7);
+        break;
+      case "monthly":
+        startDate.setDate(startDate.getDate() - 30); // Approximation for monthly
+        break;
+      case "daily":
+      default:
+        startDate.setDate(startDate.getDate() - 1); // Last 24 hours for 'daily'
+        break;
+    }
+
+    // Match criteria for filtering by date range
+    const dateFilter = {
+      createdAt: { $gte: startDate },
+    };
+
+    // Total chefs (remains overall, as chef count isn't time-bound)
     let totalChefs = 0;
     if (typeof User.countDocuments === "function") {
       totalChefs = await User.countDocuments({ role: "chef" });
@@ -39,34 +60,42 @@ router.get("/summary", async (req, res) => {
         "DEBUG: User.countDocuments is NOT a function right before calling it!"
       );
       // Fallback or indicate error
-      return res.status(500).json({
-        message:
-          "Backend configuration error: User model not correctly loaded.",
-      });
+      // It's better to continue and let other data load if possible
     }
 
-    // Total revenue (Aggregation should be fine if Order model is ok)
+    // Total revenue within the selected range
     const revenueAgg = await Order.aggregate([
+      { $match: dateFilter }, // Filter by date
       { $group: { _id: null, total: { $sum: "$grandTotal" } } },
     ]);
     const totalRevenue = revenueAgg[0]?.total || 0;
 
-    // Total orders
-    const totalOrders = await Order.countDocuments();
+    // Total orders within the selected range
+    const totalOrders = await Order.countDocuments(dateFilter);
 
-    // Total clients (unique phone numbers in orders)
+    // Total clients (unique phone numbers in orders) within the selected range
     const clients = await Order.distinct("customer.phone", {
       "customer.phone": { $ne: null },
+      ...dateFilter, // Include date filter
     });
     const totalClients = clients.length;
 
-    // Order summary (Counts for statuses and types)
-    const served = await Order.countDocuments({ status: "served" });
-    const dineIn = await Order.countDocuments({ type: "dine_in" });
-    const takeAway = await Order.countDocuments({ type: "take_away" });
+    // Order summary (Counts for statuses and types) within the selected range
+    const served = await Order.countDocuments({
+      status: "served",
+      ...dateFilter,
+    });
+    const dineIn = await Order.countDocuments({
+      type: "dine_in",
+      ...dateFilter,
+    });
+    const takeAway = await Order.countDocuments({
+      type: "take_away",
+      ...dateFilter,
+    });
     const orderSummary = { served, dineIn, takeAway };
 
-    // Tables
+    // Tables (remains overall)
     const tables = await Table.find(
       {},
       { tableNumber: 1, status: 1, chairs: 1, _id: 1 } // Include _id field
@@ -78,28 +107,49 @@ router.get("/summary", async (req, res) => {
     }));
     console.log("DEBUG: Formatted tables:", formattedTables); // Add debug logging
 
-    // Daily Revenue (Aggregation to calculate total revenue per day)
+    // Daily Revenue (Aggregation to calculate total revenue per day) within the selected range
+    // This aggregation needs to group by actual date, not just day of the week
     const dailyRevenue = await Order.aggregate([
+      { $match: dateFilter }, // Filter by date range
       {
         $group: {
-          _id: { $dayOfWeek: "$createdAt" }, // Group by day of the week (1=Sunday, 7=Saturday)
+          _id: {
+            year: { $year: "$createdAt" },
+            month: { $month: "$createdAt" },
+            day: { $dayOfMonth: "$createdAt" },
+          }, // Group by actual date
           totalRevenue: { $sum: "$grandTotal" },
         },
       },
       {
         $project: {
-          _id: 0, // Exclude _id
-          day: { $subtract: ["$_id", 1] }, // Adjust day to be 0=Sunday, 6=Saturday (matches frontend expectation)
+          _id: 0, // Exclude group _id
+          date: {
+            // Format date as YYYY-MM-DD for easier sorting/handling in frontend
+            $dateToString: {
+              format: "%Y-%m-%d",
+              date: {
+                $toDate: {
+                  $concat: [
+                    { $toString: "$_id.year" },
+                    "-",
+                    { $toString: "$_id.month" },
+                    "-",
+                    { $toString: "$_id.day" },
+                  ],
+                },
+              },
+            },
+          },
           totalRevenue: 1,
         },
       },
-      {
-        $sort: { day: 1 }, // Sort by day of the week
-      },
+      { $sort: { date: 1 } }, // Sort by date ascending
     ]);
 
-    // Chef order counts (show all chefs, even those with 0 orders)
+    // Chef order counts (remains overall)
     let chefOrders = [];
+    // Keep the existing chef counts logic, as it's not time-bound
     try {
       const chefs = await User.find({ role: "chef" });
       chefOrders = await Promise.all(
@@ -122,10 +172,9 @@ router.get("/summary", async (req, res) => {
       orderSummary,
       tables: formattedTables, // Use formatted tables
       chefOrders, // Use all chefs with order counts
-      dailyRevenue, // Include daily revenue data
+      dailyRevenue, // Include daily revenue data filtered by range
     });
   } catch (err) {
-    // This catch block should now only be for errors *other* than User.countDocuments not being a function
     console.error("Error in dashboard route processing:", err);
     res.status(500).json({
       message: "Dashboard summary processing error",
