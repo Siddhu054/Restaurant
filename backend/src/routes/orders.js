@@ -134,6 +134,9 @@ router.put("/:id", async (req, res) => {
     // Update fields based on request body
     if (req.body.status != null) {
       order.status = req.body.status;
+      if (req.body.status === "done" || req.body.status === "served") {
+        order.endTime = new Date();
+      }
     }
     // Add other fields to update as needed (e.g., assignedChef, cookingInstructions)
 
