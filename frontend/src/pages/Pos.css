@@ -289,3 +289,64 @@
     grid-template-columns: repeat(5, 1fr);
   }
 }
+
+/* Responsive POS Layout and Keyboard */
+
+/* For tablets and below */
+@media (max-width: 900px) {
+  .pos-layout {
+    grid-template-columns: 1fr;
+    min-width: 0;
+    gap: 16px;
+  }
+  .item-browsing-area,
+  .cart-overview {
+    min-width: 0;
+    width: 100%;
+  }
+  .menu-items-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* For mobile devices */
+@media (max-width: 600px) {
+  .pos-container {
+    padding: 8px;
+  }
+  .pos-layout {
+    gap: 10px;
+  }
+  .item-browsing-area,
+  .cart-overview {
+    padding: 10px;
+    border-radius: 8px;
+  }
+  .menu-items-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .keyboard-keys {
+    gap: 6px;
+  }
+  .keyboard-keys button {
+    padding: 10px;
+    font-size: 1rem;
+    border-radius: 4px;
+  }
+  .keyboard-input input {
+    padding: 8px;
+    font-size: 1.1rem;
+  }
+  .swipe-to-order-container {
+    height: 44px;
+    border-radius: 22px;
+    font-size: 1rem;
+  }
+  .swipe-to-order-button {
+    height: 34px;
+    border-radius: 17px;
+    padding: 0 12px;
+    font-size: 1rem;
+  }
+}
