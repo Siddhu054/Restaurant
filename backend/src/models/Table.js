@@ -7,6 +7,10 @@ const tableSchema = new mongoose.Schema({
     unique: true,
     trim: true,
   },
+  name: {
+    type: String,
+    default: "",
+  },
   chairs: {
     type: Number,
     required: [true, "Please provide number of chairs"],
