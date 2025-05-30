@@ -48,6 +48,16 @@ function Pos() {
     cookingInstructions: "",
   });
 
+  // State for swipe gesture for the button
+  const [buttonSwipeState, setButtonSwipeState] = useState({
+    startX: null,
+    currentTranslateX: 0,
+    isSwiping: false,
+  });
+
+  // Threshold for swipe to order button
+  const BUTTON_SWIPE_THRESHOLD = 200; // Adjust as needed
+
   // Fetch menu items on component mount
   useEffect(() => {
     const fetchMenuItems = async () => {
@@ -240,16 +250,6 @@ function Pos() {
     }
   };
 
-  // State for swipe gesture for the button
-  const [buttonSwipeState, setButtonSwipeState] = useState({
-    startX: null,
-    currentTranslateX: 0,
-    isSwiping: false,
-  });
-
-  // Threshold for swipe to order button
-  const BUTTON_SWIPE_THRESHOLD = 200; // Adjust as needed
-
   const onButtonTouchStart = (e) => {
     if (cartItems.length === 0) return; // Disable swipe if cart is empty
     if (e.touches.length === 1) {
@@ -293,6 +293,61 @@ function Pos() {
       isSwiping: false,
     });
   };
+
+  // Add mouse event handlers for desktop compatibility
+  const onButtonMouseDown = (e) => {
+    if (cartItems.length === 0) return; // Disable swipe if cart is empty
+    setButtonSwipeState({
+      startX: e.clientX,
+      currentTranslateX: 0,
+      isSwiping: true,
+    });
+  };
+
+  const onButtonMouseMove = (e) => {
+    if (!buttonSwipeState.isSwiping) return;
+
+    const currentX = e.clientX;
+    const deltaX = currentX - buttonSwipeState.startX;
+
+    // Only allow swiping right
+    const newTranslateX = Math.max(0, deltaX);
+
+    setButtonSwipeState((prevState) => ({
+      ...prevState,
+      currentTranslateX: newTranslateX,
+    }));
+  };
+
+  const onButtonMouseUp = () => {
+    if (!buttonSwipeState.isSwiping) return;
+
+    const shouldTriggerAction =
+      buttonSwipeState.currentTranslateX >= BUTTON_SWIPE_THRESHOLD;
+
+    if (shouldTriggerAction) {
+      handlePlaceOrder(); // Trigger the order placement logic
+    }
+
+    // Reset swipe state
+    setButtonSwipeState({
+      startX: null,
+      currentTranslateX: 0,
+      isSwiping: false,
+    });
+  };
+
+  // Add mouseup listener to the window to handle case where mouseup happens outside the button
+  useEffect(() => {
+    window.addEventListener("mouseup", onButtonMouseUp);
+    return () => {
+      window.removeEventListener("mouseup", onButtonMouseUp);
+    };
+  }, [
+    buttonSwipeState.isSwiping,
+    buttonSwipeState.startX,
+    buttonSwipeState.currentTranslateX,
+  ]); // Depend on state to ensure correct onButtonMouseUp is called
 
   useEffect(() => {
     const repeatOrderCart = localStorage.getItem("repeatOrderCart");
@@ -517,14 +572,15 @@ function Pos() {
               onTouchStart={onButtonTouchStart}
               onTouchMove={onButtonTouchMove}
               onTouchEnd={onButtonTouchEnd}
+              onMouseDown={onButtonMouseDown}
+              onMouseMove={onButtonMouseMove}
             >
               <div
-                className="swipe-to-order-button"
+                className={`swipe-to-order-button ${
+                  buttonSwipeState.isSwiping ? "swiping" : ""
+                }`}
                 style={{
                   transform: `translateX(${buttonSwipeState.currentTranslateX}px)`,
-                  transition: buttonSwipeState.isSwiping
-                    ? "none"
-                    : "transform 0.3s ease-out",
                 }}
               >
                 <span className="swipe-arrow">→</span>
