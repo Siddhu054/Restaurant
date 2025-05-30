@@ -9,14 +9,17 @@ import {
   CartesianGrid,
 } from "recharts";
 
-const RevenueChart = ({ data }) => {
-  // Helper function to format date string to abbreviated day name
-  const formatDayTick = (dateString) => {
-    if (!dateString) return "";
-    const date = new Date(dateString);
-    const options = { weekday: "short" }; // 'short' gives "Mon", "Tue", etc.
-    // Use 'en-US' locale or adjust based on your desired language/format
-    return date.toLocaleDateString("en-US", options);
+// Define day names for the X-axis ticks
+const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+const RevenueChart = ({ data, revenueDomain }) => {
+  // Helper function to format the day index (0-6) to abbreviated day name
+  const formatDayTick = (dayIndex) => {
+    // Ensure dayIndex is a valid number between 0 and 6
+    if (dayIndex >= 0 && dayIndex <= 6) {
+      return dayNames[dayIndex];
+    }
+    return ""; // Return empty string for invalid index
   };
 
   return (
@@ -25,12 +28,19 @@ const RevenueChart = ({ data }) => {
         <ComposedChart data={data}>
           <CartesianGrid stroke="#f5f5f5" vertical={false} />
           <XAxis
-            dataKey="day" // This is the date string from backend (YYYY-MM-DD)
+            dataKey="day" // This is now the day index (0-6)
             tick={{ fontSize: 14, fill: "#888" }}
-            // Add the tickFormatter to display abbreviated day names
+            // Use the fixed domain [0, 6]
+            domain={revenueDomain}
+            // Add the tickFormatter to display abbreviated day names from index
             tickFormatter={formatDayTick}
+            // Specify ticks for each day of the week to ensure they are always shown
+            ticks={[0, 1, 2, 3, 4, 5, 6]}
           />
-          <Tooltip />
+          <Tooltip
+            // Optional: Customize tooltip label to show day name from index
+            labelFormatter={formatDayTick}
+          />
           <Bar
             dataKey="revenue"
             barSize={40}

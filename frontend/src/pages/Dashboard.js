@@ -48,19 +48,43 @@ function Dashboard({ dashboardData, orderSummary, loading, error }) {
   }, [dashboardData?.dailyRevenue]);
 
   // Prepare data for the new RevenueChart
+  // Updated to always show data for Sun-Sat, mapping backend dates to days of the week
   const revenueData = useMemo(() => {
-    // Map the backend dailyRevenue array to the format expected by RevenueChart
-    const transformedData = dashboardData?.dailyRevenue
-      ? dashboardData.dailyRevenue.map((item) => ({
-          // Use the date string from the backend as the 'day' key for the chart
-          day: item.date,
-          revenue: item.totalRevenue,
-        }))
-      : [];
+    // Initialize data for all 7 days of the week with 0 revenue
+    // Use day index (0 for Sunday, 6 for Saturday) for consistent sorting
+    const weeklyData = [0, 1, 2, 3, 4, 5, 6].map((dayIndex) => ({
+      // The chart component will use this day property for positioning on XAxis
+      day: dayIndex,
+      revenue: 0,
+    }));
 
-    console.log("Generated revenueData for chart:", transformedData);
+    // Map backend data to the correct day of the week
+    if (dashboardData?.dailyRevenue) {
+      dashboardData.dailyRevenue.forEach((item) => {
+        // Create a Date object from the backend's date string (YYYY-MM-DD)
+        const date = new Date(item.date);
+        // Get the day of the week (0 for Sunday, 6 for Saturday)
+        const dayOfWeek = date.getDay();
 
-    return transformedData;
+        // Find the corresponding entry in the weeklyData array and add the revenue
+        const weeklyEntry = weeklyData.find((entry) => entry.day === dayOfWeek);
+        if (weeklyEntry) {
+          weeklyEntry.revenue += item.totalRevenue; // Sum revenue if multiple orders on same day
+        }
+      });
+    } else {
+      console.warn(
+        "dashboardData.dailyRevenue is null or undefined.",
+        dashboardData?.dailyRevenue
+      );
+    }
+
+    // Sort the data by day of the week (should already be sorted by mapping 0-6)
+    // weeklyData.sort((a, b) => a.day - b.day); // This line is likely not needed
+
+    console.log("Generated revenueData for chart (weekly view):", weeklyData);
+
+    return weeklyData;
   }, [dashboardData?.dailyRevenue]); // Depend on dailyRevenue from backend
 
   // Create refs for the chart containers
@@ -226,20 +250,9 @@ function Dashboard({ dashboardData, orderSummary, loading, error }) {
   console.log("Pie Container Size:", pieContainerSize);
   console.log("Line Container Size:", lineContainerSize);
 
-  // Calculate domain for the revenue chart XAxis - This is likely not needed anymore
-  // if the chart component handles date strings directly on the XAxis.
-  // Keeping it commented out in case the chart component needs specific date formatting.
-  /*
-  const revenueDomain =
-    revenueData.length > 0
-      ? [
-          // You might need to parse dates here if the chart needs numeric domain
-          // For now, assuming the chart can handle date strings as categories
-          revenueData[0].day,
-          revenueData[revenueData.length - 1].day,
-        ]
-      : [];
-  */
+  // Calculate domain for the revenue chart XAxis
+  // This is needed to ensure the XAxis shows all 7 days (0-6) consistently
+  const revenueDomain = [0, 6];
 
   // Handle loading and error states at the top level
   if (loading) return <div className="main-content">Loading dashboard...</div>;
@@ -519,7 +532,7 @@ function Dashboard({ dashboardData, orderSummary, loading, error }) {
           <div className="revenue-chart" ref={lineContainerRef}>
             <h3 className="summary-title">Daily Revenue</h3>
             {revenueData.length > 0 ? (
-              <RevenueChart data={revenueData} />
+              <RevenueChart data={revenueData} revenueDomain={revenueDomain} />
             ) : (
               <p>No revenue data available for the selected range.</p>
             )}
