@@ -48,7 +48,12 @@ const OrderSummaryDonut = ({ pieData, size }) => {
       <PieChart
         width={size.width}
         height={size.height}
-        style={{ backgroundColor: "lightblue" }}
+        style={{
+          backgroundColor: "lightblue",
+          position: "relative",
+          zIndex: 10,
+          overflow: "visible",
+        }}
       >
         {" "}
         {/* Use passed size */}
