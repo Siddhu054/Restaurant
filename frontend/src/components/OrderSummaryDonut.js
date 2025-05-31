@@ -63,6 +63,7 @@ const OrderSummaryDonut = ({ pieData, size }) => {
           paddingAngle={total > 0 ? 2 : 0} // Gap between segments, remove if total is 0
           stroke="none" // No stroke around segments
           label={total > 0} // Only show labels if there's data
+          isAnimationActive={false} // Disable animation for debugging
         >
           {/* Map data entries to Pie chart Cells */}
           {total > 0 ? ( // Only map cells if there's data
