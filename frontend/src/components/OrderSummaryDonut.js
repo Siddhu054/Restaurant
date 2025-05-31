@@ -23,6 +23,13 @@ const OrderSummaryDonut = ({ pieData, size }) => {
   }));
   console.log("DEBUG: OrderSummaryDonut calculated percentages:", percentData);
 
+  console.log(
+    "DEBUG: OrderSummaryDonut rendering with total:",
+    total,
+    "and data:",
+    data
+  );
+
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 32 }}>
       {/* The PieChart component from Recharts */}
