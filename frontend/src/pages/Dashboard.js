@@ -523,17 +523,12 @@ function Dashboard({ dashboardData, orderSummary, loading, error }) {
               <div
                 style={{
                   width: "180px",
-                  height: "180px",
+                  height: "200px",
                   overflow: "visible",
                   flexShrink: 0,
                 }}
               >
-                <OrderSummaryDonut
-                  served={orderSummaryData.served || 0}
-                  dineIn={orderSummaryData.dineIn || 0}
-                  takeAway={orderSummaryData.takeAway || 0}
-                  size={pieContainerSize}
-                />
+                <OrderSummaryDonut pieData={pieData} size={pieContainerSize} />
               </div>
               <div className="summary-details">
                 <p>
