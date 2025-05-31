@@ -532,6 +532,7 @@ function Dashboard({ dashboardData, orderSummary, loading, error }) {
                   served={orderSummaryData.served || 0}
                   dineIn={orderSummaryData.dineIn || 0}
                   takeAway={orderSummaryData.takeAway || 0}
+                  size={pieContainerSize}
                 />
               </div>
               <div className="summary-details">
