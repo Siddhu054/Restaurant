@@ -1,5 +1,5 @@
 import React from "react";
-import { PieChart, Pie, Cell, Tooltip } from "recharts";
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 
 // Grayscale colors for Figma style (used for the segments)
 // const COLORS = ["#cfcfcf", "#a8a8a8", "#7a7a7a"];
@@ -45,56 +45,56 @@ const OrderSummaryDonut = ({ pieData, size }) => {
       }}
     >
       {/* The PieChart component from Recharts */}
-      <PieChart
-        width={size.width}
-        height={size.height}
-        style={{
-          backgroundColor: "lightblue",
-          position: "relative",
-          zIndex: 10,
-          overflow: "visible",
-        }}
-      >
-        {" "}
-        {/* Use passed size */}
-        <Pie
-          data={total > 0 ? data : [{ value: 1 }]}
-          dataKey="value" // Tell Recharts to use the 'value' property for segment size
-          nameKey="name" // Tell Recharts to use the 'name' property for labels/tooltip
-          cx="50%" // Center the chart
-          cy="50%"
-          innerRadius={55} // Doughnut chart hole size
-          outerRadius={75} // Doughnut chart outer size
-          // paddingAngle={total > 0 ? 2 : 0} // Temporarily remove paddingAngle
-          // stroke="none" // Temporarily remove stroke
-          // label={total > 0} // Temporarily remove label
-          isAnimationActive={false} // Disable animation for debugging
-        >
-          {/* Map data entries to Pie chart Cells */}
-          {total > 0 ? ( // Only map cells if there's data
-            data.map((entry, idx) => {
-              console.log("DEBUG: Mapping data entry for Cell:", entry, idx);
-              return (
-                // Each Cell gets a fill color based on its index
-                <Cell key={`cell-${idx}`} fill={COLORS[idx % COLORS.length]} />
-              );
-            })
-          ) : (
-            <Cell key="empty" fill="#ccc" /> // Placeholder for zero data
+      <ResponsiveContainer width="100%" height="100%">
+        <PieChart style={{ backgroundColor: "lightblue" }}>
+          {" "}
+          <Pie
+            data={total > 0 ? data : [{ value: 1 }]}
+            dataKey="value" // Tell Recharts to use the 'value' property for segment size
+            nameKey="name" // Tell Recharts to use the 'name' property for labels/tooltip
+            cx="50%" // Center the chart
+            cy="50%"
+            innerRadius={55} // Doughnut chart hole size
+            outerRadius={75} // Doughnut chart outer size
+            paddingAngle={total > 0 ? 2 : 0} // Re-added paddingAngle
+            stroke="none" // Re-added stroke
+            label={
+              total > 0
+                ? ({ name, percent }) =>
+                    `${name} ${(percent * 100).toFixed(0)}%`
+                : false
+            } // Re-added label with formatting
+            isAnimationActive={false} // Keep animation disabled for now
+          >
+            {/* Map data entries to Pie chart Cells */}
+            {total > 0 ? ( // Only map cells if there's data
+              data.map((entry, idx) => {
+                console.log("DEBUG: Mapping data entry for Cell:", entry, idx);
+                return (
+                  // Each Cell gets a fill color based on its index
+                  <Cell
+                    key={`cell-${idx}`}
+                    fill={COLORS[idx % COLORS.length]}
+                  />
+                );
+              })
+            ) : (
+              <Cell key="empty" fill="#ccc" /> // Placeholder for zero data
+            )}
+          </Pie>
+          {total > 0 && ( // Only show tooltip if there's data
+            <Tooltip
+              formatter={(value, name) => [`${value} orders`, name]}
+              contentStyle={{
+                backgroundColor: "#fff",
+                border: "none",
+                borderRadius: "4px",
+                boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+              }}
+            />
           )}
-        </Pie>
-        {total > 0 && ( // Only show tooltip if there's data
-          <Tooltip
-            formatter={(value, name) => [`${value} orders`, name]}
-            contentStyle={{
-              backgroundColor: "#fff",
-              border: "none",
-              borderRadius: "4px",
-              boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-            }}
-          />
-        )}
-      </PieChart>
+        </PieChart>
+      </ResponsiveContainer>
 
       {/* Section to display percentage labels next to the donut */}
       {/* This section might need adjustment based on actual design, using flex for now */}
