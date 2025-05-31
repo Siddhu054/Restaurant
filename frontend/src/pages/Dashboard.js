@@ -491,7 +491,7 @@ function Dashboard({ dashboardData, orderSummary, loading, error }) {
                   overflow: "hidden",
                 }}
               >
-                <OrderSummaryPie pieData={pieData} size={pieContainerSize} />
+                <OrderSummaryDonut pieData={pieData} size={pieContainerSize} />
               </div>
               <div className="summary-details">
                 <p>
