@@ -484,7 +484,13 @@ function Dashboard({ dashboardData, orderSummary, loading, error }) {
                 flexWrap: "wrap",
               }}
             >
-              <div style={{ width: "150px", height: "150px" }}>
+              <div
+                style={{
+                  maxWidth: "150px",
+                  height: "150px",
+                  overflow: "hidden",
+                }}
+              >
                 <OrderSummaryPie pieData={pieData} size={pieContainerSize} />
               </div>
               <div className="summary-details">
