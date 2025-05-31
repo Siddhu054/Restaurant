@@ -42,6 +42,11 @@ function Dashboard({ dashboardData, orderSummary, loading, error }) {
 
   // Aggregation functions
   function aggregateOrderSummary(dailyOrderSummaries, range) {
+    console.log(
+      "DEBUG: aggregateOrderSummary input - dailyOrderSummaries:",
+      dailyOrderSummaries
+    );
+    console.log("DEBUG: aggregateOrderSummary input - range:", range);
     if (
       !Array.isArray(dailyOrderSummaries) ||
       dailyOrderSummaries.length === 0
@@ -74,15 +79,22 @@ function Dashboard({ dashboardData, orderSummary, loading, error }) {
     }
 
     const last = dailyOrderSummaries[dailyOrderSummaries.length - 1];
-    return {
+    const result = {
       served: last.served || 0,
       dineIn: last.dineIn || 0,
       takeAway: last.takeAway || 0,
     };
+    console.log("DEBUG: aggregateOrderSummary output:", result);
+    return result;
   }
 
   function aggregateRevenue(dailyRevenue, range) {
-    if (!Array.isArray(dailyRevenue) || dailyRevenue.length === 0) return [];
+    console.log("DEBUG: aggregateRevenue input - dailyRevenue:", dailyRevenue);
+    console.log("DEBUG: aggregateRevenue input - range:", range);
+    if (!Array.isArray(dailyRevenue) || dailyRevenue.length === 0) {
+      console.log("DEBUG: aggregateRevenue output (empty input):", []);
+      return [];
+    }
 
     if (range === "weekly") {
       const weeks = [];
@@ -140,6 +152,7 @@ function Dashboard({ dashboardData, orderSummary, loading, error }) {
       label: name,
       revenue: dayMap[idx] || 0,
     }));
+    console.log("DEBUG: aggregateRevenue output (daily):", fullWeek);
     return fullWeek;
   }
 
