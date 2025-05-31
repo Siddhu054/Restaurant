@@ -2,7 +2,10 @@ import React from "react";
 import { PieChart, Pie, Cell, Tooltip } from "recharts";
 
 // Grayscale colors for Figma style (used for the segments)
-const COLORS = ["#cfcfcf", "#a8a8a8", "#7a7a7a"];
+// const COLORS = ["#cfcfcf", "#a8a8a8", "#7a7a7a"];
+
+// Use distinct colors from the original Pie chart component
+const COLORS = ["#7ED957", "#FFD966", "#6EC6FF"]; // Colors for Served, Dine In, Take Away
 
 // Component receives the aggregated counts as props
 const OrderSummaryDonut = ({ pieData, size }) => {
