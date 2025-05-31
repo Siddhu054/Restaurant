@@ -521,9 +521,10 @@ function Dashboard({ dashboardData, orderSummary, loading, error }) {
             >
               <div
                 style={{
-                  flex: 1,
-                  minWidth: "180px",
+                  width: "180px",
+                  height: "180px",
                   overflow: "hidden",
+                  flexShrink: 0,
                 }}
               >
                 <OrderSummaryDonut pieData={pieData} size={pieContainerSize} />
