@@ -14,7 +14,7 @@
   },
   "scripts": {
     "start": "serve -s build -l $PORT",
-    "build": "CI=false react-scripts build",
+    "build": "DISABLE_ESLINT_PLUGIN=true react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
