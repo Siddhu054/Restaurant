@@ -62,7 +62,7 @@ const OrderSummaryDonut = ({ served, dineIn, takeAway }) => {
 
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 32 }}>
-      <ResponsiveContainer width="100%" height={160}>
+      <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           <Pie
             data={data}
