@@ -263,3 +263,17 @@
 .order-type-text {
   font-weight: 500;
 }
+
+/* Responsive Menu */
+@media (max-width: 600px) {
+  .menu-categories {
+    padding-bottom: 5px;
+  }
+  .category-tab {
+    padding: 8px 12px;
+    font-size: 0.8rem;
+  }
+  .menu-items-list {
+    grid-template-columns: 1fr;
+  }
+}
