@@ -1,0 +1,12 @@
+/* Responsive Past Orders */
+@media (max-width: 600px) {
+  .past-orders-list {
+    padding: 0 8px;
+  }
+  .past-order-card {
+    padding: 16px;
+  }
+  .past-order-card h2 {
+    font-size: 1.5rem;
+  }
+}
