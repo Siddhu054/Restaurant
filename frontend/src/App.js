@@ -36,89 +36,34 @@ function AppContent() {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [refetchTrigger, setRefetchTrigger] = useState(0);
 
-  const fetchDashboardData = async () => {
-    try {
-      const { data } = await axiosInstance.get("/api/dashboard/summary");
-      console.log("Fetched data:", data);
-
-      if (data.orderSummary) {
-        setDashboardData((prevData) => ({
-          ...prevData,
-          orderSummary: data.orderSummary,
-        }));
-      } else {
-        console.warn("orderSummary is undefined in fetched data", data);
-        setDashboardData((prevData) => ({ ...prevData, orderSummary: {} }));
-      }
-
-      if (data.dailyRevenue) {
-        setDashboardData((prevData) => ({
-          ...prevData,
-          dailyRevenue: data.dailyRevenue,
-        }));
-      } else {
-        console.warn("dailyRevenue is undefined in fetched data", data);
-        setDashboardData((prevData) => ({ ...prevData, dailyRevenue: [] }));
-      }
-
-      if (data.tables) {
-        setDashboardData((prevData) => ({
-          ...prevData,
-          tables: data.tables,
-        }));
-      } else {
-        console.warn("tables is undefined in fetched data", data);
-        setDashboardData((prevData) => ({ ...prevData, tables: [] }));
-      }
-
-      if (data.chefOrders) {
-        setDashboardData((prevData) => ({
-          ...prevData,
-          chefOrders: data.chefOrders,
-        }));
-      } else {
-        console.warn("chefOrders is undefined in fetched data", data);
-        setDashboardData((prevData) => ({ ...prevData, chefOrders: [] }));
-      }
-
-      if (data.totalChefs !== undefined) {
-        setDashboardData((prevData) => ({
-          ...prevData,
-          totalChefs: data.totalChefs,
-        }));
-      }
-      if (data.totalRevenue !== undefined) {
-        setDashboardData((prevData) => ({
-          ...prevData,
-          totalRevenue: data.totalRevenue,
-        }));
-      }
-      if (data.totalOrders !== undefined) {
-        setDashboardData((prevData) => ({
-          ...prevData,
-          totalOrders: data.totalOrders,
-        }));
-      }
-      if (data.totalClients !== undefined) {
-        setDashboardData((prevData) => ({
-          ...prevData,
-          totalClients: data.totalClients,
-        }));
-      }
-    } catch (error) {
-      setError(error.response?.data?.message || error.message);
-      console.error("Error fetching dashboard data:", error);
-    } finally {
-      setLoading(false);
-    }
+  const triggerDashboardRefetch = () => {
+    setRefetchTrigger((prev) => prev + 1);
   };
 
   useEffect(() => {
-    if (location.pathname === "/dashboard" || location.pathname === "/") {
-      fetchDashboardData();
-    }
-  }, [location.pathname]);
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const response = await axiosInstance.get("/dashboard/summary");
+        setDashboardData(response.data);
+        if (response.data.orderSummary) {
+          setOrderSummary(response.data.orderSummary);
+        }
+        setError(null);
+      } catch (err) {
+        console.error("Error fetching dashboard data:", err);
+        setError(err);
+        setDashboardData({});
+        setOrderSummary({});
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [refetchTrigger]);
 
   return (
     <div className="app-container">
@@ -126,7 +71,11 @@ function AppContent() {
       <aside className="sidebar">
         <div className="sidebar-logo"></div>
         <nav className="sidebar-nav">
-          <Link to="/dashboard" className="nav-btn" title="Analytics">
+          <Link
+            to="/dashboard"
+            className={location.pathname === "/dashboard" ? "active" : ""}
+            title="Analytics"
+          >
             <FaChartBar size={30} />
           </Link>
           <Link to="/tables" className="nav-btn" title="Tables">
@@ -176,6 +125,14 @@ function AppContent() {
           <Route path="/order-confirmation" element={<OrderConfirmation />} />
           <Route path="/pos" element={<Pos />} />
           <Route path="/past-orders" element={<PastOrders />} />
+          <Route
+            path="/order-management"
+            element={
+              <OrderManagement
+                triggerDashboardRefetch={triggerDashboardRefetch}
+              />
+            }
+          />
         </Routes>
       </main>
     </div>
