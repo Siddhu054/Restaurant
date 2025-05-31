@@ -149,6 +149,51 @@ router.get("/summary", async (req, res) => {
     ]);
     console.log("DEBUG: Daily revenue aggregation result:", dailyRevenue);
 
+    // Fetch raw daily order summaries for frontend aggregation
+    const rawDailyOrderSummaries = await Order.aggregate([
+      { $match: dateFilter },
+      {
+        $group: {
+          _id: {
+            year: { $year: "$createdAt" },
+            month: { $month: "$createdAt" },
+            day: { $dayOfMonth: "$createdAt" },
+          },
+          served: { $sum: { $cond: [{ $eq: ["$status", "served"] }, 1, 0] } },
+          dineIn: { $sum: { $cond: [{ $eq: ["$type", "dine_in"] }, 1, 0] } },
+          takeAway: {
+            $sum: { $cond: [{ $eq: ["$type", "take_away"] }, 1, 0] },
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          date: {
+            $dateToString: {
+              format: "%Y-%m-%d",
+              date: {
+                $toDate: {
+                  $concat: [
+                    { $toString: "$_id.year" },
+                    "-",
+                    { $toString: "$_id.month" },
+                    "-",
+                    { $toString: "$_id.day" },
+                  ],
+                },
+              },
+            },
+          },
+          served: 1,
+          dineIn: 1,
+          takeAway: 1,
+        },
+      },
+      { $sort: { date: 1 } },
+    ]);
+    console.log("DEBUG: Raw daily order summaries:", rawDailyOrderSummaries);
+
     let chefOrders = [];
 
     try {
@@ -175,6 +220,7 @@ router.get("/summary", async (req, res) => {
       tables: formattedTables,
       chefOrders,
       dailyRevenue,
+      dailyOrderSummary: rawDailyOrderSummaries,
     });
   } catch (err) {
     console.error("Error in dashboard route processing:", err);
