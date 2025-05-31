@@ -6,18 +6,22 @@ const COLORS = ["#cfcfcf", "#a8a8a8", "#7a7a7a"];
 
 // Component receives the aggregated counts as props
 const OrderSummaryDonut = ({ pieData, size }) => {
+  console.log("DEBUG: OrderSummaryDonut received props:", { pieData, size });
+
   // Calculate the total number of orders for the period from pieData
   const total = pieData.reduce((sum, entry) => sum + entry.value, 0);
+  console.log("DEBUG: OrderSummaryDonut calculated total:", total);
 
   // Use the provided pieData directly, it should already be in the correct format
   const data = pieData;
+  console.log("DEBUG: OrderSummaryDonut using data:", data);
 
-  // Calculate percentages for display alongside the chart (if needed, though frontend calculates them now)
-  // We'll keep this here for potential future use or if Donut component also displays percentages
+  // Calculate percentages for display alongside the chart
   const percentData = data.map((d) => ({
     ...d,
     percent: total ? Math.round((d.value / total) * 100) : 0, // Avoid division by zero
   }));
+  console.log("DEBUG: OrderSummaryDonut calculated percentages:", percentData);
 
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 32 }}>

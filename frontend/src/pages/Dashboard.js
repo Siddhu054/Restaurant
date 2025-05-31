@@ -78,6 +78,11 @@ function Dashboard({ dashboardData, orderSummary, loading, error }) {
       );
     }
 
+    console.log(
+      "DEBUG: Input dailyOrderSummaries content:",
+      dailyOrderSummaries
+    );
+
     const last = dailyOrderSummaries[dailyOrderSummaries.length - 1];
     const result = {
       served: last.served || 0,
@@ -160,10 +165,16 @@ function Dashboard({ dashboardData, orderSummary, loading, error }) {
   const dailyOrderSummaries = Array.isArray(dashboardData?.dailyOrderSummary)
     ? dashboardData.dailyOrderSummary
     : [];
+  console.log(
+    "DEBUG: Raw dailyOrderSummaries from dashboardData:",
+    dailyOrderSummaries
+  );
+
   const orderSummaryData = aggregateOrderSummary(
     dailyOrderSummaries,
     orderFilter
   );
+  console.log("DEBUG: Processed orderSummaryData:", orderSummaryData);
 
   const rawDailyRevenue = Array.isArray(dashboardData?.dailyRevenue)
     ? dashboardData.dailyRevenue
@@ -175,6 +186,7 @@ function Dashboard({ dashboardData, orderSummary, loading, error }) {
     orderSummaryData.served +
     orderSummaryData.dineIn +
     orderSummaryData.takeAway;
+  console.log("DEBUG: Total orders for percentage:", totalOrdersForPercentage);
 
   const calculatePercentage = (value, total) => {
     if (total === 0) return "0%";
@@ -183,7 +195,11 @@ function Dashboard({ dashboardData, orderSummary, loading, error }) {
 
   // Memoized data for charts
   const pieData = useMemo(() => {
-    return orderSummaryData
+    console.log(
+      "DEBUG: Creating pieData from orderSummaryData:",
+      orderSummaryData
+    );
+    const data = orderSummaryData
       ? [
           { name: "Served", value: orderSummaryData.served || 0 },
           { name: "Dine In", value: orderSummaryData.dineIn || 0 },
@@ -193,6 +209,8 @@ function Dashboard({ dashboardData, orderSummary, loading, error }) {
           },
         ]
       : [];
+    console.log("DEBUG: Final pieData array:", data);
+    return data;
   }, [orderSummaryData]);
 
   const lineData = useMemo(() => {
@@ -239,16 +257,20 @@ function Dashboard({ dashboardData, orderSummary, loading, error }) {
   useEffect(() => {
     const updateContainerSize = () => {
       if (pieContainerRef.current) {
-        setPieContainerSize({
+        const newSize = {
           width: pieContainerRef.current.clientWidth,
           height: pieContainerRef.current.clientHeight,
-        });
+        };
+        console.log("DEBUG: Updating pie container size:", newSize);
+        setPieContainerSize(newSize);
       }
       if (lineContainerRef.current) {
-        setLineContainerSize({
+        const newSize = {
           width: lineContainerRef.current.clientWidth,
           height: lineContainerRef.current.clientHeight,
-        });
+        };
+        console.log("DEBUG: Updating line container size:", newSize);
+        setLineContainerSize(newSize);
       }
     };
 
@@ -499,8 +521,6 @@ function Dashboard({ dashboardData, orderSummary, loading, error }) {
             >
               <div
                 style={{
-                  maxWidth: "150px",
-                  height: "150px",
                   overflow: "hidden",
                 }}
               >
