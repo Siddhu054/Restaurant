@@ -14,7 +14,7 @@
   },
   "scripts": {
     "start": "serve -s build -l $PORT",
-    "build": "GENERATE_SOURCEMAP=false react-scripts build",
+    "build": "CI=false react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
