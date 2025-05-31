@@ -199,16 +199,17 @@ function Dashboard({ dashboardData, orderSummary, loading, error }) {
       "DEBUG: Creating pieData from orderSummaryData:",
       orderSummaryData
     );
-    const data = orderSummaryData
-      ? [
-          { name: "Served", value: orderSummaryData.served || 0 },
-          { name: "Dine In", value: orderSummaryData.dineIn || 0 },
-          {
-            name: "Take Away",
-            value: orderSummaryData.takeAway || 0,
-          },
-        ]
-      : [];
+    const data =
+      orderSummaryData && typeof orderSummaryData === "object"
+        ? [
+            { name: "Served", value: orderSummaryData.served || 0 },
+            { name: "Dine In", value: orderSummaryData.dineIn || 0 },
+            {
+              name: "Take Away",
+              value: orderSummaryData.takeAway || 0,
+            },
+          ]
+        : [];
     console.log("DEBUG: Final pieData array:", data);
     return data;
   }, [orderSummaryData]);
