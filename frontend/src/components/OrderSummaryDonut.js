@@ -1,8 +1,15 @@
 import React from "react";
-import { PieChart, Pie, Cell } from "recharts";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+  Tooltip,
+  Legend,
+} from "recharts";
 
-// Grayscale colors for Figma style
-const COLORS = ["#cfcfcf", "#a8a8a8", "#7a7a7a"];
+// Custom colors for the pie chart segments
+const COLORS = ["#7ED957", "#FFD966", "#6EC6FF"]; // Using the original colors
 
 const OrderSummaryDonut = ({ served, dineIn, takeAway }) => {
   const total = served + dineIn + takeAway;
@@ -11,65 +18,90 @@ const OrderSummaryDonut = ({ served, dineIn, takeAway }) => {
     { name: "Served", value: served },
     { name: "Dine In", value: dineIn },
   ];
-  const percentData = data.map((d) => ({
-    ...d,
-    percent: total ? Math.round((d.value / total) * 100) : 0,
-  }));
+
+  // Custom Legend Component
+  const CustomLegend = ({ payload }) => {
+    return (
+      <ul
+        className="pie-chart-legend"
+        style={{ listStyle: "none", padding: 0, margin: 0 }}
+      >
+        {payload.map((entry, index) => {
+          const percentage =
+            total > 0 ? ((entry.value / total) * 100).toFixed(1) : 0;
+          return (
+            <li
+              key={`legend-${index}`}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                marginBottom: "8px",
+                color: "#333",
+                fontSize: "14px",
+              }}
+            >
+              <span
+                style={{
+                  display: "inline-block",
+                  width: "12px",
+                  height: "12px",
+                  backgroundColor: entry.color,
+                  marginRight: "8px",
+                  borderRadius: "50%",
+                }}
+              ></span>
+              <span>
+                {entry.payload.name} ({percentage}%)
+              </span>
+            </li>
+          );
+        })}
+      </ul>
+    );
+  };
 
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 32 }}>
-      <PieChart width={160} height={160}>
-        <Pie
-          data={percentData}
-          cx="50%"
-          cy="50%"
-          innerRadius={55}
-          outerRadius={75}
-          paddingAngle={2}
-          dataKey="value"
-          stroke="none"
-        >
-          {percentData.map((entry, idx) => (
-            <Cell key={`cell-${idx}`} fill={COLORS[idx % COLORS.length]} />
-          ))}
-        </Pie>
-      </PieChart>
-      <div style={{ minWidth: 180 }}>
-        {percentData.map((entry, idx) => (
-          <div
-            key={entry.name}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              marginBottom: 12,
-            }}
+      <ResponsiveContainer width="100%" height={160}>
+        <PieChart>
+          <Pie
+            data={data}
+            cx="45%"
+            cy="50%"
+            labelLine={false}
+            outerRadius={75}
+            innerRadius={55}
+            paddingAngle={2}
+            dataKey="value"
+            stroke="none"
           >
-            <span style={{ width: 80, color: "#888" }}>{entry.name}</span>
-            <span style={{ width: 40, color: "#aaa" }}>({entry.percent}%)</span>
-            <div
-              style={{
-                flex: 1,
-                height: 8,
-                background: "#eee",
-                borderRadius: 4,
-                marginLeft: 8,
-                marginRight: 0,
-                overflow: "hidden",
-              }}
-            >
-              <div
-                style={{
-                  width: `${entry.percent}%`,
-                  height: "100%",
-                  background: COLORS[idx],
-                  borderRadius: 4,
-                  transition: "width 0.4s",
-                }}
+            {data.map((entry, index) => (
+              <Cell
+                key={`cell-${index}`}
+                fill={COLORS[index % COLORS.length]}
               />
-            </div>
-          </div>
-        ))}
-      </div>
+            ))}
+          </Pie>
+          <Tooltip
+            formatter={(value) => [`${value} orders`, ""]}
+            contentStyle={{
+              backgroundColor: "#fff",
+              border: "none",
+              borderRadius: "4px",
+              boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+            }}
+          />
+          <Legend
+            content={<CustomLegend />}
+            layout="vertical"
+            align="right"
+            verticalAlign="middle"
+            wrapperStyle={{
+              paddingLeft: "20px",
+            }}
+          />
+        </PieChart>
+      </ResponsiveContainer>
     </div>
   );
 };
