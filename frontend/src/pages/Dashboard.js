@@ -524,7 +524,7 @@ function Dashboard({ dashboardData, orderSummary, loading, error }) {
                 style={{
                   width: "180px",
                   height: "200px",
-                  overflow: "visible",
+                  overflow: "hidden",
                   flexShrink: 0,
                 }}
               >
