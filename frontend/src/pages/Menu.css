@@ -2,8 +2,8 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background: #f4f6f8; /* Match dashboard background or adjust */
-  padding: 20px; /* Add some padding */
+  background: #f4f6f8;
+  padding: 20px;
 }
 
 .menu-header {
@@ -24,31 +24,31 @@
 }
 
 .menu-search-bar {
-  width: 100%; /* Full width for mobile */
+  width: 100%;
   padding: 12px 20px;
-  border-radius: 8px; /* Adjust border radius as per Figma */
+  border-radius: 8px;
   border: 1px solid #e0e0e0;
   background: #fff;
   font-size: 1rem;
-  box-sizing: border-box; /* Include padding and border in element's total width */
+  box-sizing: border-box;
 }
 
 .menu-categories {
   display: flex;
-  gap: 15px; /* Space between tabs */
+  gap: 15px;
   margin-bottom: 20px;
-  overflow-x: auto; /* Enable horizontal scrolling for many tabs */
-  padding-bottom: 10px; /* Add some padding for scrollbar */
-  -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+  overflow-x: auto;
+  padding-bottom: 10px;
+  -webkit-overflow-scrolling: touch;
 }
 
 .category-tab {
-  flex-shrink: 0; /* Prevent tabs from shrinking */
-  padding: 10px 15px; /* Padding inside tabs */
-  border-radius: 20px; /* Pill shape */
-  background: #fff; /* Default tab background */
-  border: 1px solid #e0e0e0; /* Default border */
-  color: #555; /* Default text color */
+  flex-shrink: 0;
+  padding: 10px 15px;
+  border-radius: 20px;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  color: #555;
   cursor: pointer;
   transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
   font-size: 0.9rem;
@@ -56,33 +56,29 @@
 
 .category-tab:hover,
 .category-tab.active {
-  background: #7ed957; /* Active/hover background */
-  border-color: #7ed957; /* Active/hover border */
-  color: #fff; /* Active/hover text color */
+  background: #7ed957;
+  border-color: #7ed957;
+  color: #fff;
 }
 
 .menu-items-list {
-  flex-grow: 1; /* Take up remaining space */
-  /* Add grid or flex styling for item cards later */
+  flex-grow: 1;
 }
 
 .menu-items-grid {
   display: grid;
-  grid-template-columns: repeat(
-    auto-fill,
-    minmax(150px, 1fr)
-  ); /* Responsive grid for item cards */
-  gap: 20px; /* Space between item cards */
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 20px;
 }
 
 .menu-item-card {
   background: #fff;
-  border-radius: 8px; /* Adjust as per Figma */
-  overflow: hidden; /* Hide overflowing parts of the image */
+  border-radius: 8px;
+  overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   display: flex;
   flex-direction: column;
-  cursor: pointer; /* Indicate clickable */
+  cursor: pointer;
   transition: transform 0.2s ease-in-out;
 }
 
@@ -92,15 +88,15 @@
 
 .menu-item-image {
   width: 100%;
-  height: 120px; /* Fixed height for images, adjust as needed */
-  object-fit: cover; /* Cover the area without distorting aspect ratio */
+  height: 120px;
+  object-fit: cover;
 }
 
 .menu-item-info {
   padding: 10px;
   display: flex;
   flex-direction: column;
-  align-items: flex-start; /* Align text to the left */
+  align-items: flex-start;
 }
 
 .menu-item-name {
@@ -111,26 +107,26 @@
 }
 
 .menu-item-price {
-  color: #7ed957; /* Price color as in Figma */
+  color: #7ed957;
   font-size: 0.9rem;
   font-weight: bold;
 }
 
 .add-remove-buttons {
   display: flex;
-  justify-content: center; /* Center the buttons */
+  justify-content: center;
   align-items: center;
   padding: 10px;
-  gap: 10px; /* Space between buttons and quantity */
-  background: #f8f8f8; /* Light background for the button area */
+  gap: 10px;
+  background: #f8f8f8;
 }
 
 .add-remove-buttons button {
   background: #eee;
   border: none;
-  border-radius: 50%; /* Circular buttons */
-  width: 30px; /* Button size */
-  height: 30px; /* Button size */
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
   font-size: 1.2rem;
   font-weight: bold;
   cursor: pointer;
@@ -149,23 +145,23 @@
 
 .menu-footer {
   margin-top: 20px;
-  width: 100%; /* Full width for the footer */
-  padding: 15px 0; /* Add some vertical padding */
-  background: #fff; /* White background for the footer */
-  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05); /* Shadow at the top */
+  width: 100%;
+  padding: 15px 0;
+  background: #fff;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
   display: flex;
-  flex-direction: column; /* Stack summary and button */
-  gap: 15px; /* Space between summary and button */
-  border-top-left-radius: 16px; /* Rounded top corners */
-  border-top-right-radius: 16px; /* Rounded top corners */
-  box-sizing: border-box; /* Include padding in width */
+  flex-direction: column;
+  gap: 15px;
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  box-sizing: border-box;
 }
 
 .cart-summary {
-  padding: 0 15px; /* Horizontal padding */
+  padding: 0 15px;
   display: flex;
   flex-direction: column;
-  gap: 8px; /* Space between summary lines */
+  gap: 8px;
 }
 
 .cart-summary h3 {
@@ -179,37 +175,37 @@
 .cart-item,
 .summary-line {
   display: flex;
-  justify-content: space-between; /* Space out text and price/value */
+  justify-content: space-between;
   font-size: 1rem;
   color: #555;
 }
 
 .cart-item span:first-child,
 .summary-line span:first-child {
-  font-weight: normal; /* Ensure the labels are not bold */
+  font-weight: normal;
 }
 
 .cart-item span:last-child,
 .summary-line span:last-child {
-  font-weight: bold; /* Make values/prices bold */
-  color: #333; /* Darker color for values */
+  font-weight: bold;
+  color: #333;
 }
 
 .summary-line.grand-total {
   font-size: 1.1rem;
   font-weight: bold;
-  color: #222; /* Darker color for grand total */
-  border-top: 1px solid #eee; /* Separator line */
+  color: #222;
+  border-top: 1px solid #eee;
   padding-top: 10px;
   margin-top: 10px;
 }
 
 .next-button {
   width: 100%;
-  padding: 15px; /* Ensure consistent padding */
-  border-radius: 8px; /* Match Figma */
+  padding: 15px;
+  border-radius: 8px;
   border: none;
-  background: #222; /* Dark background as in Figma */
+  background: #222;
   color: #fff;
   font-size: 1.1rem;
   cursor: pointer;
