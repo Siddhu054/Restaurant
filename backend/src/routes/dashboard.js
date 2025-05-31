@@ -57,45 +57,59 @@ router.get("/summary", async (req, res) => {
         "DEBUG: User.countDocuments is NOT a function right before calling it!"
       );
     }
+    console.log("DEBUG: totalChefs value:", totalChefs);
 
     const revenueAgg = await Order.aggregate([
       { $match: dateFilter },
       { $group: { _id: null, total: { $sum: "$grandTotal" } } },
     ]);
     const totalRevenue = revenueAgg[0]?.total || 0;
+    console.log("DEBUG: revenueAgg result:", revenueAgg);
+    console.log("DEBUG: totalRevenue value:", totalRevenue);
 
     const totalOrders = await Order.countDocuments(dateFilter);
+    console.log("DEBUG: totalOrders count:", totalOrders);
 
     const clients = await Order.distinct("customer.phone", {
       "customer.phone": { $ne: null },
       ...dateFilter, // Include date filter
     });
     const totalClients = clients.length;
+    console.log("DEBUG: distinct clients result:", clients);
+    console.log("DEBUG: totalClients count:", totalClients);
 
     const served = await Order.countDocuments({
       status: "served",
       ...dateFilter,
     });
+    console.log("DEBUG: served count:", served);
+
     const dineIn = await Order.countDocuments({
       type: "dine_in",
       ...dateFilter,
     });
+    console.log("DEBUG: dineIn count:", dineIn);
+
     const takeAway = await Order.countDocuments({
       type: "take_away",
       ...dateFilter,
     });
+    console.log("DEBUG: takeAway count:", takeAway);
+
     const orderSummary = { served, dineIn, takeAway };
+    console.log("DEBUG: orderSummary object:", orderSummary);
 
     const tables = await Table.find(
       {},
       { tableNumber: 1, status: 1, chairs: 1, _id: 1 }
     );
+    console.log("DEBUG: Raw tables fetched from DB:", tables);
 
     const formattedTables = tables.map((table) => ({
       ...table.toObject(),
       tableNumber: String(table.tableNumber).padStart(2, "0"),
     }));
-    console.log("DEBUG: Formatted tables:", formattedTables);
+    console.log("DEBUG: Formatted tables sent to frontend:", formattedTables);
 
     const dailyRevenue = await Order.aggregate([
       { $match: dateFilter },
@@ -133,14 +147,17 @@ router.get("/summary", async (req, res) => {
       },
       { $sort: { date: 1 } },
     ]);
+    console.log("DEBUG: Daily revenue aggregation result:", dailyRevenue);
 
     let chefOrders = [];
 
     try {
       const chefs = await User.find({ role: "chef" });
+      console.log("DEBUG: Chefs fetched for order count:", chefs);
       chefOrders = await Promise.all(
         chefs.map(async (chef) => {
           const count = await Order.countDocuments({ assignedChef: chef._id });
+          console.log(`DEBUG: Orders count for chef ${chef.name}:`, count);
           return { name: chef.name, count };
         })
       );
