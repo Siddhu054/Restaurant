@@ -178,7 +178,7 @@ function Dashboard({ dashboardData, orderSummary, loading, error }) {
             name: "Take Away",
             value: orderSummaryData.takeAway || 0,
           },
-        ].filter((item) => item.value > 0)
+        ]
       : [];
   }, [orderSummaryData]);
 
