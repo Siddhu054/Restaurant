@@ -352,6 +352,12 @@ function Dashboard({ dashboardData, orderSummary, loading, error }) {
   console.log("Pie Container Size:", pieContainerSize);
   console.log("Line Container Size:", lineContainerSize);
 
+  console.log(
+    "DEBUG: orderSummaryData before passing to Donut:",
+    orderSummaryData
+  );
+  console.log("DEBUG: pieData before passing to Donut:", pieData);
+
   if (loading) return <div className="main-content">Loading dashboard...</div>;
   if (error) return <div className="main-content">{error.message}</div>;
 
