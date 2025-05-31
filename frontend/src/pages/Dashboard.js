@@ -402,35 +402,29 @@ function Dashboard({ dashboardData, orderSummary, loading, error }) {
           <div className="dashboard-card">
             <FaUsers className="card-icon" />
             <div className="card-content">
-              <h3>Total Customers</h3>
-              <p>{safe(orderSummaryData.served, 0)}</p>
-            </div>
-          </div>
-          <div className="dashboard-card">
-            <FaUtensils className="card-icon" />
-            <div className="card-content">
-              <h3>Total Orders</h3>
-              <p>
-                {safe(
-                  orderSummaryData.served +
-                    orderSummaryData.dineIn +
-                    orderSummaryData.takeAway,
-                  0
-                )}
-              </p>
+              <h3>Total Chef</h3>
+              <p>{safe(dashboardData?.totalChefs, 0)}</p>
             </div>
           </div>
           <div className="dashboard-card">
             <FaMoneyBillWave className="card-icon" />
             <div className="card-content">
               <h3>Total Revenue</h3>
-              <p>
-                ₹
-                {safeNum(
-                  revenueDataChart.reduce((sum, item) => sum + item.revenue, 0),
-                  0
-                )}
-              </p>
+              <p>₹{safeNum(dashboardData?.totalRevenue, 0)}</p>
+            </div>
+          </div>
+          <div className="dashboard-card">
+            <FaUtensils className="card-icon" />
+            <div className="card-content">
+              <h3>Total Orders</h3>
+              <p>{safe(dashboardData?.totalOrders, 0)}</p>
+            </div>
+          </div>
+          <div className="dashboard-card">
+            <FaUsers className="card-icon" />
+            <div className="card-content">
+              <h3>Total Clients</h3>
+              <p>{safe(dashboardData?.totalClients, 0)}</p>
             </div>
           </div>
         </div>
