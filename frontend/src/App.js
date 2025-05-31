@@ -46,7 +46,7 @@ function AppContent() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const response = await axiosInstance.get("/dashboard/summary");
+        const response = await axiosInstance.get("/api/dashboard/summary");
         setDashboardData(response.data);
         if (response.data.orderSummary) {
           setOrderSummary(response.data.orderSummary);
