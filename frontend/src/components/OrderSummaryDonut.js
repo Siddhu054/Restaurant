@@ -60,9 +60,9 @@ const OrderSummaryDonut = ({ pieData, size }) => {
           cy="50%"
           innerRadius={55} // Doughnut chart hole size
           outerRadius={75} // Doughnut chart outer size
-          paddingAngle={total > 0 ? 2 : 0} // Gap between segments, remove if total is 0
-          stroke="none" // No stroke around segments
-          label={total > 0} // Only show labels if there's data
+          // paddingAngle={total > 0 ? 2 : 0} // Temporarily remove paddingAngle
+          // stroke="none" // Temporarily remove stroke
+          // label={total > 0} // Temporarily remove label
           isAnimationActive={false} // Disable animation for debugging
         >
           {/* Map data entries to Pie chart Cells */}
