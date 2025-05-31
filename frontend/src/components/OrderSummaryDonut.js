@@ -46,7 +46,13 @@ const OrderSummaryDonut = ({ pieData, size }) => {
     >
       {/* The PieChart component from Recharts */}
       <ResponsiveContainer width="100%" height="100%">
-        <PieChart style={{ backgroundColor: "lightblue" }}>
+        <PieChart
+          style={
+            {
+              /* Removed background color */
+            }
+          }
+        >
           {" "}
           <Pie
             data={total > 0 ? data : [{ value: 1 }]}
