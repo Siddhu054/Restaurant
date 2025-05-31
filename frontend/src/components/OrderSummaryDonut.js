@@ -36,9 +36,20 @@ const OrderSummaryDonut = ({ pieData, size }) => {
   console.log("DEBUG: OrderSummaryDonut rendering with size:", size);
 
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 32 }}>
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 32,
+        border: "1px solid red",
+      }}
+    >
       {/* The PieChart component from Recharts */}
-      <PieChart width={size.width} height={size.height}>
+      <PieChart
+        width={size.width}
+        height={size.height}
+        style={{ backgroundColor: "lightblue" }}
+      >
         {" "}
         {/* Use passed size */}
         <Pie
