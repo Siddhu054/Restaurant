@@ -441,7 +441,7 @@ function Dashboard({ dashboardData, orderSummary, loading, error }) {
           </select>
         </div>
         <div className="dashboard-analytics">
-          <div className="order-summary">
+          <div className="order-summary" ref={pieContainerRef}>
             <div className="section-header">
               <h2>Order Summary</h2>
               <select
@@ -454,14 +454,10 @@ function Dashboard({ dashboardData, orderSummary, loading, error }) {
                 <option value="monthly">Monthly</option>
               </select>
             </div>
-            <OrderSummaryDonut
-              served={orderSummaryData.served}
-              dineIn={orderSummaryData.dineIn}
-              takeAway={orderSummaryData.takeAway}
-            />
+            <OrderSummaryPie pieData={pieData} size={pieContainerSize} />
           </div>
 
-          <div className="revenue-chart">
+          <div className="revenue-chart" ref={lineContainerRef}>
             <div className="section-header">
               <h2>Daily Revenue</h2>
               <select
@@ -474,7 +470,7 @@ function Dashboard({ dashboardData, orderSummary, loading, error }) {
                 <option value="monthly">Monthly</option>
               </select>
             </div>
-            <RevenueChart data={revenueDataChart} />
+            <RevenueChart data={revenueDataChart} size={lineContainerSize} />
           </div>
         </div>
 
