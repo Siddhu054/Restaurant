@@ -66,7 +66,7 @@ const OrderSummaryDonut = ({ served, dineIn, takeAway }) => {
         <PieChart>
           <Pie
             data={data}
-            cx="45%"
+            cx="50%"
             cy="50%"
             labelLine={false}
             outerRadius={75}
