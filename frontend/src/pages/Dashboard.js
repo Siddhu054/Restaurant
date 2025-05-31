@@ -17,17 +17,18 @@ function Dashboard({ dashboardData, orderSummary, loading, error }) {
     val !== undefined && val !== null && !isNaN(val) ? Number(val) : fallback;
 
   const pieData = useMemo(() => {
-    return dashboardData?.orderSummary
+    // Use the aggregated orderSummaryData here
+    return orderSummaryData
       ? [
-          { name: "Served", value: dashboardData.orderSummary.served || 0 },
-          { name: "Dine In", value: dashboardData.orderSummary.dineIn || 0 },
+          { name: "Served", value: orderSummaryData.served || 0 },
+          { name: "Dine In", value: orderSummaryData.dineIn || 0 },
           {
             name: "Take Away",
-            value: dashboardData.orderSummary.takeAway || 0,
+            value: orderSummaryData.takeAway || 0,
           },
         ].filter((item) => item.value > 0)
       : [];
-  }, [dashboardData?.orderSummary]);
+  }, [orderSummaryData]); // Depend on orderSummaryData
 
   const lineData = useMemo(() => {
     const transformedData = dashboardData?.dailyRevenue
@@ -329,7 +330,7 @@ function Dashboard({ dashboardData, orderSummary, loading, error }) {
     return fullWeek;
   }
 
-  const dailyOrderSummaries = Array.isArray(dashboardData.dailyOrderSummary)
+  const dailyOrderSummaries = Array.isArray(dashboardData?.dailyOrderSummary)
     ? dashboardData.dailyOrderSummary
     : [];
   const orderSummaryData = aggregateOrderSummary(
@@ -337,10 +338,21 @@ function Dashboard({ dashboardData, orderSummary, loading, error }) {
     orderFilter
   );
 
-  const rawDailyRevenue = Array.isArray(dashboardData.dailyRevenue)
+  const rawDailyRevenue = Array.isArray(dashboardData?.dailyRevenue)
     ? dashboardData.dailyRevenue
     : [];
   const revenueDataChart = aggregateRevenue(rawDailyRevenue, revenueFilter);
+
+  // Calculate total orders for percentages
+  const totalOrdersForPercentage =
+    orderSummaryData.served +
+    orderSummaryData.dineIn +
+    orderSummaryData.takeAway;
+
+  const calculatePercentage = (value, total) => {
+    if (total === 0) return "0%";
+    return `${Math.round((value / total) * 100)}%`;
+  };
 
   if (loading) return <div className="main-content">Loading dashboard...</div>;
   if (error) return <div className="main-content">{error.message}</div>;
@@ -393,14 +405,21 @@ function Dashboard({ dashboardData, orderSummary, loading, error }) {
             <FaUsers className="card-icon" />
             <div className="card-content">
               <h3>Total Customers</h3>
-              <p>{orderSummaryData.served}</p>
+              <p>{safe(orderSummaryData.served, 0)}</p>
             </div>
           </div>
           <div className="dashboard-card">
             <FaUtensils className="card-icon" />
             <div className="card-content">
               <h3>Total Orders</h3>
-              <p>{orderSummaryData.dineIn + orderSummaryData.takeAway}</p>
+              <p>
+                {safe(
+                  orderSummaryData.served +
+                    orderSummaryData.dineIn +
+                    orderSummaryData.takeAway,
+                  0
+                )}
+              </p>
             </div>
           </div>
           <div className="dashboard-card">
@@ -408,7 +427,11 @@ function Dashboard({ dashboardData, orderSummary, loading, error }) {
             <div className="card-content">
               <h3>Total Revenue</h3>
               <p>
-                ₹{revenueDataChart.reduce((sum, item) => sum + item.revenue, 0)}
+                ₹
+                {safeNum(
+                  revenueDataChart.reduce((sum, item) => sum + item.revenue, 0),
+                  0
+                )}
               </p>
             </div>
           </div>
@@ -454,7 +477,54 @@ function Dashboard({ dashboardData, orderSummary, loading, error }) {
                 <option value="monthly">Monthly</option>
               </select>
             </div>
-            <OrderSummaryPie pieData={pieData} size={pieContainerSize} />
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "20px",
+                flexWrap: "wrap",
+              }}
+            >
+              <div style={{ width: "150px", height: "150px" }}>
+                <OrderSummaryPie pieData={pieData} size={pieContainerSize} />
+              </div>
+              <div className="summary-details">
+                <p>
+                  Take Away (
+                  {calculatePercentage(
+                    orderSummaryData.takeAway,
+                    totalOrdersForPercentage
+                  )}
+                  ){" "}
+                  <span style={{ float: "right", fontWeight: "bold" }}>
+                    {safe(orderSummaryData.takeAway, 0)}
+                  </span>
+                </p>
+                <p>
+                  Served (
+                  {calculatePercentage(
+                    orderSummaryData.served,
+                    totalOrdersForPercentage
+                  )}
+                  ){" "}
+                  <span style={{ float: "right", fontWeight: "bold" }}>
+                    {safe(orderSummaryData.served, 0)}
+                  </span>
+                </p>
+                <p>
+                  Dine In (
+                  {calculatePercentage(
+                    orderSummaryData.dineIn,
+                    totalOrdersForPercentage
+                  )}
+                  ){" "}
+                  <span style={{ float: "right", fontWeight: "bold" }}>
+                    {safe(orderSummaryData.dineIn, 0)}
+                  </span>
+                </p>
+              </div>
+            </div>
           </div>
 
           <div className="revenue-chart" ref={lineContainerRef}>
