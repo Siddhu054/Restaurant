@@ -55,10 +55,13 @@ const OrderSummaryDonut = ({ pieData, size }) => {
         >
           {/* Map data entries to Pie chart Cells */}
           {total > 0 ? ( // Only map cells if there's data
-            data.map((entry, idx) => (
-              // Each Cell gets a fill color based on its index
-              <Cell key={`cell-${idx}`} fill={COLORS[idx % COLORS.length]} />
-            ))
+            data.map((entry, idx) => {
+              console.log("DEBUG: Mapping data entry for Cell:", entry, idx);
+              return (
+                // Each Cell gets a fill color based on its index
+                <Cell key={`cell-${idx}`} fill={COLORS[idx % COLORS.length]} />
+              );
+            })
           ) : (
             <Cell key="empty" fill="#ccc" /> // Placeholder for zero data
           )}
