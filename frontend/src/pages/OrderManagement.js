@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
-import "../App.css"; // Assuming shared styles or create a new css file
+import "../App.css";
 import OrderLine from "../components/OrderLine";
-import axiosInstance from "../api/axios"; // Import axiosInstance
+import axiosInstance from "../api/axios";
 
 function OrderManagement() {
   const [orders, setOrders] = useState([]);
@@ -9,7 +9,7 @@ function OrderManagement() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [assigning, setAssigning] = useState({});
-  const [filter, setFilter] = useState("all"); // all, processing, done, served, not_picked_up
+  const [filter, setFilter] = useState("all");
 
   useEffect(() => {
     fetchOrders();
@@ -17,18 +17,15 @@ function OrderManagement() {
   }, []);
 
   useEffect(() => {
-    // Update orders every second for duration timer
     const timer = setInterval(() => {
       setOrders((prevOrders) => [...prevOrders]);
     }, 1000);
 
-    // Clean up interval on component unmount
     return () => clearInterval(timer);
   }, []);
 
   const fetchOrders = async () => {
     try {
-      // Use axiosInstance for API call
       const { data } = await axiosInstance.get("/api/orders");
       setOrders(data);
     } catch (err) {
@@ -107,7 +104,7 @@ function OrderManagement() {
       if (mappedType === "dine_in" && order.table) {
         newOrderData.table = order.table._id || order.table;
       }
-      // Use axiosInstance for API call
+
       const { data } = await axiosInstance.post("/api/orders", newOrderData);
       if (!data.success) {
         throw new Error(data.message);
@@ -147,7 +144,6 @@ function OrderManagement() {
   const formatDuration = (startTime, endTime, status) => {
     let end = new Date();
     if (status === "done" || status === "served") {
-      // Use endTime if available, otherwise fallback to now
       end = endTime ? new Date(endTime) : end;
     }
     const start = new Date(startTime);
@@ -217,7 +213,6 @@ function OrderManagement() {
     });
   };
 
-  // Utility to get card background class
   const getCardBgClass = (type, status) => {
     if (status === "served") {
       if (type === "dine_in") return "order-card-bg-served-dinein";

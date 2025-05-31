@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const orderSchema = new mongoose.Schema({
   orderNumber: {
     type: String,
-    // required: true, // Temporarily making not required to bypass validation before pre-save hook
+
     unique: true,
   },
   type: {
@@ -68,7 +68,7 @@ const orderSchema = new mongoose.Schema({
     ref: "User",
   },
   estimatedTime: {
-    type: String, // Or Number, depending on how you store it
+    type: String,
   },
   startTime: {
     type: Date,
@@ -81,7 +81,6 @@ const orderSchema = new mongoose.Schema({
   },
 });
 
-// Generate order number before saving
 orderSchema.pre("save", async function (next) {
   if (this.isNew) {
     const date = new Date();

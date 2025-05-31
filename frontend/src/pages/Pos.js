@@ -1,64 +1,50 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axiosInstance from "../api/axios"; // Import axiosInstance
+import axiosInstance from "../api/axios";
 import "./Pos.css";
 
 function Pos() {
   const navigate = useNavigate();
-  // State for cart items
+
   const [cartItems, setCartItems] = useState([]);
 
-  // State for keyboard input
   const [input, setInput] = useState("");
 
-  // State for menu items
   const [menuItems, setMenuItems] = useState([]);
 
-  // State for loading menu items
   const [loading, setLoading] = useState(true);
 
-  // State for error fetching menu items
   const [error, setError] = useState(null);
 
-  // State for order type (dine_in or take_away)
   const [orderType, setOrderType] = useState("dine_in"); // Default to dine_in
 
-  // State for selected table
   const [selectedTable, setSelectedTable] = useState(null);
 
-  // State for available tables
   const [tables, setTables] = useState([]);
 
-  // State for loading tables
   const [loadingTables, setLoadingTables] = useState(true);
 
-  // State for error fetching tables
   const [errorTables, setErrorTables] = useState(null);
 
-  // State for customer details
   const [customerDetails, setCustomerDetails] = useState({
     name: "",
     phone: "",
-    address: "", // For take-away orders
+    address: "",
   });
 
-  // State for delivery/order details (like estimated time, cooking instructions)
   const [orderExtraInfo, setOrderExtraInfo] = useState({
-    estimatedTime: "", // e.g., "45 minutes"
+    estimatedTime: "",
     cookingInstructions: "",
   });
 
-  // State for swipe gesture for the button
   const [buttonSwipeState, setButtonSwipeState] = useState({
     startX: null,
     currentTranslateX: 0,
     isSwiping: false,
   });
 
-  // Threshold for swipe to order button
-  const BUTTON_SWIPE_THRESHOLD = 200; // Adjust as needed
+  const BUTTON_SWIPE_THRESHOLD = 200;
 
-  // Fetch menu items on component mount
   useEffect(() => {
     const fetchMenuItems = async () => {
       try {
@@ -74,20 +60,18 @@ function Pos() {
     };
 
     fetchMenuItems();
-    fetchTables(); // Fetch tables when component mounts
+    fetchTables();
   }, []);
 
-  // Fetch available tables
   const fetchTables = async () => {
     try {
       setLoadingTables(true);
-      // Use axiosInstance for API call
+
       const { data } = await axiosInstance.get("/api/tables");
-      // Filter for available tables if your backend returns status
-      // For now, assuming all fetched tables are available to be assigned
+
       setTables(data);
       if (data.length > 0) {
-        setSelectedTable(data[0]._id); // Select the first table by default
+        setSelectedTable(data[0]._id);
       }
     } catch (err) {
       setErrorTables(err.response?.data?.message || err.message);
@@ -97,7 +81,6 @@ function Pos() {
     }
   };
 
-  // Handler for keyboard key press
   const handleKeyPress = (key) => {
     if (key === "DEL") {
       setInput(input.slice(0, -1));
@@ -106,48 +89,39 @@ function Pos() {
     }
   };
 
-  // Handler for adding item to cart
   const handleAddItem = (item) => {
-    // Determine the item ID, checking for both 'id' and '_id'
     const itemId = item.id || item._id;
 
-    // Ensure the item has an ID before proceeding
     if (!item || !itemId) {
       console.error("Attempted to add an item without a valid ID:", item);
       return;
     }
 
-    // Check if item already exists in cart based on its ID
     const existingItemIndex = cartItems.findIndex(
       (cartItem) => cartItem.id === itemId
     );
 
     if (existingItemIndex >= 0) {
-      // If item exists, increase quantity
       const updatedCartItems = [...cartItems];
       updatedCartItems[existingItemIndex].quantity += 1;
       setCartItems(updatedCartItems);
     } else {
-      // If item doesn't exist, add it with quantity 1, ensuring ID is present
       setCartItems([
         ...cartItems,
         {
-          id: itemId, // Use the determined item ID
+          id: itemId,
           name: item.name,
           price: item.price,
           quantity: 1,
-          // Add other properties you might need from the menu item
         },
       ]);
     }
   };
 
-  // Handler for removing item from cart
   const handleRemoveItem = (itemId) => {
     setCartItems(cartItems.filter((item) => item.id !== itemId));
   };
 
-  // Handler for updating item quantity
   const handleUpdateQuantity = (itemId, newQuantity) => {
     if (newQuantity < 1) {
       handleRemoveItem(itemId);
@@ -160,13 +134,11 @@ function Pos() {
     );
   };
 
-  // Calculate total price
   const totalPrice = cartItems.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0
   );
 
-  // Group menu items by category
   const menuItemsByCategory = menuItems.reduce((acc, item) => {
     if (!acc[item.category]) {
       acc[item.category] = [];
@@ -175,7 +147,6 @@ function Pos() {
     return acc;
   }, {});
 
-  // Basic keyboard layout
   const keyboardLayout = [
     ["1", "2", "3"],
     ["4", "5", "6"],
@@ -183,40 +154,33 @@ function Pos() {
     ["0", ".", "DEL"],
   ];
 
-  // Handler for proceeding with order - now triggered by swipe
   const handlePlaceOrder = async () => {
-    // Calculate totals
     const itemTotal = cartItems.reduce(
       (sum, item) => sum + item.price * item.quantity,
       0
     );
-    const deliveryCharge = 0; // You can add delivery charge calculation logic here
-    const taxes = itemTotal * 0.1; // 10% tax, adjust as needed
+    const deliveryCharge = 0;
+    const taxes = itemTotal * 0.1;
     const grandTotal = itemTotal + deliveryCharge + taxes;
 
-    // Prepare order data to be sent to the backend
     const orderDataToSend = {
       items: cartItems.map((item) => ({
-        menuItem: item.id, // Use the ID stored in the cart item
+        menuItem: item.id,
         quantity: item.quantity,
-        // Add cookingInstructions if that functionality is added later
       })),
-      totalAmount: grandTotal, // Send grandTotal as totalAmount
-      orderType: orderType === "take_away" ? "take_away" : orderType, // Use orderType for backend
-      status: "processing", // Initial status
-      customerDetails: customerDetails, // Include customer details
-      deliveryInfo: orderExtraInfo, // Include extra order info (estimated time, instructions)
+      totalAmount: grandTotal,
+      orderType: orderType === "take_away" ? "take_away" : orderType,
+      status: "processing",
+      customerDetails: customerDetails,
+      deliveryInfo: orderExtraInfo,
     };
 
-    // Only include table for dine-in orders
     if (orderType === "dine_in" && selectedTable) {
       orderDataToSend.table = selectedTable;
     } else {
-      // Ensure table is not sent for take_away
       delete orderDataToSend.table;
     }
 
-    // Prevent placing order if dine-in is selected but no table is chosen
     if (orderType === "dine_in" && !selectedTable) {
       alert("Please select a table for dine-in orders.");
       return;
@@ -225,33 +189,31 @@ function Pos() {
     console.log("Order data being sent to backend:", orderDataToSend);
 
     try {
-      // Use axiosInstance for API call
       const { data } = await axiosInstance.post("/api/orders", orderDataToSend);
 
       console.log("Order placed successfully:", data);
 
       if (data.success) {
-        // Store the order data in localStorage for the confirmation page
         localStorage.setItem("latestOrder", JSON.stringify(data.order));
-        // Navigate to confirmation page with the order data
+
         navigate("/order-confirmation", { state: { order: data.order } });
       } else {
         alert(data.message || "Failed to place order");
       }
     } catch (err) {
       console.error("Failed to place order:", err);
-      // Display an error message to the user
+
       setError(
         `Failed to place order: ${err.response?.data?.message || err.message}`
       );
       alert(
         `Failed to place order: ${err.response?.data?.message || err.message}`
-      ); // Also show an alert for immediate feedback
+      );
     }
   };
 
   const onButtonTouchStart = (e) => {
-    if (cartItems.length === 0) return; // Disable swipe if cart is empty
+    if (cartItems.length === 0) return;
     if (e.touches.length === 1) {
       setButtonSwipeState({
         startX: e.touches[0].clientX,
@@ -267,7 +229,6 @@ function Pos() {
     const currentX = e.touches[0].clientX;
     const deltaX = currentX - buttonSwipeState.startX;
 
-    // Only allow swiping right
     const newTranslateX = Math.max(0, deltaX);
 
     setButtonSwipeState((prevState) => ({
@@ -283,10 +244,9 @@ function Pos() {
       buttonSwipeState.currentTranslateX >= BUTTON_SWIPE_THRESHOLD;
 
     if (shouldTriggerAction) {
-      handlePlaceOrder(); // Trigger the order placement logic
+      handlePlaceOrder();
     }
 
-    // Reset swipe state
     setButtonSwipeState({
       startX: null,
       currentTranslateX: 0,
@@ -294,9 +254,8 @@ function Pos() {
     });
   };
 
-  // Add mouse event handlers for desktop compatibility
   const onButtonMouseDown = (e) => {
-    if (cartItems.length === 0) return; // Disable swipe if cart is empty
+    if (cartItems.length === 0) return;
     setButtonSwipeState({
       startX: e.clientX,
       currentTranslateX: 0,
@@ -310,7 +269,6 @@ function Pos() {
     const currentX = e.clientX;
     const deltaX = currentX - buttonSwipeState.startX;
 
-    // Only allow swiping right
     const newTranslateX = Math.max(0, deltaX);
 
     setButtonSwipeState((prevState) => ({
@@ -326,10 +284,9 @@ function Pos() {
       buttonSwipeState.currentTranslateX >= BUTTON_SWIPE_THRESHOLD;
 
     if (shouldTriggerAction) {
-      handlePlaceOrder(); // Trigger the order placement logic
+      handlePlaceOrder();
     }
 
-    // Reset swipe state
     setButtonSwipeState({
       startX: null,
       currentTranslateX: 0,
@@ -337,7 +294,6 @@ function Pos() {
     });
   };
 
-  // Add mouseup listener to the window to handle case where mouseup happens outside the button
   useEffect(() => {
     window.addEventListener("mouseup", onButtonMouseUp);
     return () => {
@@ -347,7 +303,7 @@ function Pos() {
     buttonSwipeState.isSwiping,
     buttonSwipeState.startX,
     buttonSwipeState.currentTranslateX,
-  ]); // Depend on state to ensure correct onButtonMouseUp is called
+  ]);
 
   useEffect(() => {
     const repeatOrderCart = localStorage.getItem("repeatOrderCart");

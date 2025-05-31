@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axiosInstance from "../api/axios"; // Import axiosInstance
+import axiosInstance from "../api/axios";
 
 function PastOrders() {
   const [orders, setOrders] = useState([]);
@@ -9,13 +9,12 @@ function PastOrders() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Use axiosInstance for API call
     axiosInstance
       .get("/api/orders?limit=20")
       .then((response) => {
         const data = response.data;
         let fetchedOrders = Array.isArray(data) ? data : data.orders || [];
-        // Sort orders by createdAt descending (latest first)
+
         fetchedOrders = [...fetchedOrders].sort(
           (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
         );
@@ -34,16 +33,15 @@ function PastOrders() {
   }, []);
 
   const handleRepeatOrder = (order) => {
-    // Map past order items to POS cart format
     const repeatedItems = order.items.map((item) => ({
-      id: item.menuItem._id || item.menuItem.id || item.menuItem, // adapt as needed
+      id: item.menuItem._id || item.menuItem.id || item.menuItem,
       name: item.menuItem.name || item.name,
       price: item.menuItem.price || item.price,
       quantity: item.quantity,
     }));
-    // Store in localStorage for POS page to pick up
+
     localStorage.setItem("repeatOrderCart", JSON.stringify(repeatedItems));
-    // Navigate to POS page
+
     navigate("/pos?repeat=1");
   };
 

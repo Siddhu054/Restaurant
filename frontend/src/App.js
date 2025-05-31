@@ -25,7 +25,6 @@ import {
   FaHistory,
 } from "react-icons/fa";
 
-// Create a new component that uses useLocation
 function AppContent() {
   const location = useLocation();
   const [dashboardData, setDashboardData] = useState({});
@@ -119,7 +118,6 @@ function AppContent() {
     if (location.pathname === "/dashboard" || location.pathname === "/") {
       fetchDashboardData();
     }
-    // eslint-disable-next-line
   }, [location.pathname]);
 
   return (
@@ -184,7 +182,6 @@ function AppContent() {
   );
 }
 
-// Main App component that provides the Router
 function App() {
   return (
     <Router>

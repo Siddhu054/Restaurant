@@ -6,21 +6,17 @@ import OrderSummaryDonut from "../components/OrderSummaryDonut";
 import RevenueChart from "../components/RevenueChart";
 import // Removed PieChart, Pie, Cell, Tooltip, LineChart, Line, XAxis, YAxis, CartesianGrid, Legend, ResponsiveContainer
 "recharts";
-
-// Updated colors to match Figma
-// const PIE_COLORS = ["#7ED957", "#FFD966", "#6EC6FF"];
-// const REVENUE_COLORS = ["#7ED957"];
+import { useNavigate } from "react-router-dom";
+import { FaUsers, FaUtensils, FaMoneyBillWave } from "react-icons/fa";
+import TablesStatus from "../components/TablesStatus";
 
 function Dashboard({ dashboardData, orderSummary, loading, error }) {
-  // Defensive helpers
   const safe = (val, fallback = "--") =>
     val !== undefined && val !== null ? val : fallback;
   const safeNum = (val, fallback = "--") =>
     val !== undefined && val !== null && !isNaN(val) ? Number(val) : fallback;
 
-  // Transform order summary data for pie chart
   const pieData = useMemo(() => {
-    // Use orderSummary from backend which has counts for served, dineIn, takeAway
     return dashboardData?.orderSummary
       ? [
           { name: "Served", value: dashboardData.orderSummary.served || 0 },
@@ -29,15 +25,14 @@ function Dashboard({ dashboardData, orderSummary, loading, error }) {
             name: "Take Away",
             value: dashboardData.orderSummary.takeAway || 0,
           },
-        ].filter((item) => item.value > 0) // Filter out categories with 0 orders if desired
+        ].filter((item) => item.value > 0)
       : [];
   }, [dashboardData?.orderSummary]);
 
-  // Transform daily revenue data for line chart - Use day number for X axis
   const lineData = useMemo(() => {
     const transformedData = dashboardData?.dailyRevenue
       ? dashboardData.dailyRevenue.map((item) => ({
-          day: item.day, // Use the day number (0-6)
+          day: item.day,
           revenue: item.totalRevenue,
         }))
       : [];
@@ -47,29 +42,21 @@ function Dashboard({ dashboardData, orderSummary, loading, error }) {
     return transformedData;
   }, [dashboardData?.dailyRevenue]);
 
-  // Prepare data for the new RevenueChart
-  // Updated to always show data for Sun-Sat, mapping backend dates to days of the week
   const revenueData = useMemo(() => {
-    // Initialize data for all 7 days of the week with 0 revenue
-    // Use day index (0 for Sunday, 6 for Saturday) for consistent sorting
     const weeklyData = [0, 1, 2, 3, 4, 5, 6].map((dayIndex) => ({
-      // The chart component will use this day property for positioning on XAxis
       day: dayIndex,
       revenue: 0,
     }));
 
-    // Map backend data to the correct day of the week
     if (dashboardData?.dailyRevenue) {
       dashboardData.dailyRevenue.forEach((item) => {
-        // Create a Date object from the backend's date string (YYYY-MM-DD)
         const date = new Date(item.date);
-        // Get the day of the week (0 for Sunday, 6 for Saturday)
+
         const dayOfWeek = date.getDay();
 
-        // Find the corresponding entry in the weeklyData array and add the revenue
         const weeklyEntry = weeklyData.find((entry) => entry.day === dayOfWeek);
         if (weeklyEntry) {
-          weeklyEntry.revenue += item.totalRevenue; // Sum revenue if multiple orders on same day
+          weeklyEntry.revenue += item.totalRevenue;
         }
       });
     } else {
@@ -79,19 +66,16 @@ function Dashboard({ dashboardData, orderSummary, loading, error }) {
       );
     }
 
-    // Sort the data by day of the week (should already be sorted by mapping 0-6)
     // weeklyData.sort((a, b) => a.day - b.day); // This line is likely not needed
 
     console.log("Generated revenueData for chart (weekly view):", weeklyData);
 
     return weeklyData;
-  }, [dashboardData?.dailyRevenue]); // Depend on dailyRevenue from backend
+  }, [dashboardData?.dailyRevenue]);
 
-  // Create refs for the chart containers
   const pieContainerRef = useRef(null);
   const lineContainerRef = useRef(null);
 
-  // State to store container dimensions
   const [pieContainerSize, setPieContainerSize] = useState({
     width: 0,
     height: 0,
@@ -101,29 +85,25 @@ function Dashboard({ dashboardData, orderSummary, loading, error }) {
     height: 0,
   });
 
-  // Global search and filter state
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState({
-    analytics: "all", // all, served, dine_in, take_away
-    tableStatus: "all", // all, available, reserved
-    orderType: "all", // all, dine_in, take_away
+    analytics: "all",
+    tableStatus: "all",
+    orderType: "all",
   });
 
   const [summaryRange, setSummaryRange] = useState("daily");
 
-  // Helper function to filter tables
   const getFilteredTables = useMemo(() => {
-    console.log("DEBUG: Raw tables data:", dashboardData?.tables); // Add debug logging
+    console.log("DEBUG: Raw tables data:", dashboardData?.tables);
     let filtered = dashboardData?.tables || [];
 
-    // Filter by table status
     if (filters.tableStatus !== "all") {
       filtered = filtered.filter(
         (table) => table.status === filters.tableStatus
       );
     }
 
-    // Filter by analytics/order type (show only tables with orders matching the filter)
     if (filters.analytics !== "all" || filters.orderType !== "all") {
       const matchingTableIds = new Set(
         (dashboardData?.orders || [])
@@ -138,13 +118,11 @@ function Dashboard({ dashboardData, orderSummary, loading, error }) {
       );
       filtered = filtered.filter(
         (table) =>
-          // Use tableNumber as fallback if _id is missing
           matchingTableIds.has(table._id) ||
           matchingTableIds.has(table.tableNumber)
       );
     }
 
-    // Filter by search query
     if (searchQuery) {
       filtered = filtered.filter((table) =>
         String(table.tableNumber)
@@ -153,7 +131,7 @@ function Dashboard({ dashboardData, orderSummary, loading, error }) {
       );
     }
 
-    console.log("DEBUG: Filtered tables:", filtered); // Add debug logging
+    console.log("DEBUG: Filtered tables:", filtered);
     return filtered;
   }, [
     dashboardData?.tables,
@@ -164,7 +142,6 @@ function Dashboard({ dashboardData, orderSummary, loading, error }) {
     searchQuery,
   ]);
 
-  // Helper function to filter chef orders
   const getFilteredChefOrders = useMemo(() => {
     return (dashboardData?.chefOrders || []).filter((chef) => {
       if (
@@ -179,7 +156,6 @@ function Dashboard({ dashboardData, orderSummary, loading, error }) {
     });
   }, [dashboardData?.chefOrders, searchQuery]);
 
-  // Helper function to filter orders
   const getFilteredOrders = useMemo(() => {
     return (dashboardData?.orders || []).filter((order) => {
       if (filters.orderType !== "all" && order.type !== filters.orderType)
@@ -207,7 +183,6 @@ function Dashboard({ dashboardData, orderSummary, loading, error }) {
     searchQuery,
   ]);
 
-  // Helper function to filter menu items
   const getFilteredMenuItems = useMemo(() => {
     return (dashboardData?.menuItems || []).filter((item) => {
       if (
@@ -220,7 +195,6 @@ function Dashboard({ dashboardData, orderSummary, loading, error }) {
   }, [dashboardData?.menuItems, searchQuery]);
 
   useEffect(() => {
-    // Function to update container sizes
     const updateContainerSize = () => {
       if (pieContainerRef.current) {
         setPieContainerSize({
@@ -236,29 +210,141 @@ function Dashboard({ dashboardData, orderSummary, loading, error }) {
       }
     };
 
-    // Update size initially and on window resize
     updateContainerSize();
     window.addEventListener("resize", updateContainerSize);
 
-    // Cleanup listener on component unmount
     return () => {
       window.removeEventListener("resize", updateContainerSize);
     };
-  }, [dashboardData]); // Rerun effect if dashboardData changes (in case layout changes based on data)
+  }, [dashboardData]);
 
-  // Log container sizes
   console.log("Pie Container Size:", pieContainerSize);
   console.log("Line Container Size:", lineContainerSize);
 
-  // Calculate domain for the revenue chart XAxis
-  // This is needed to ensure the XAxis shows all 7 days (0-6) consistently
   const revenueDomain = [0, 6];
 
-  // Handle loading and error states at the top level
+  const navigate = useNavigate();
+  const [orderFilter, setOrderFilter] = useState("daily");
+  const [revenueFilter, setRevenueFilter] = useState("daily");
+
+  function aggregateOrderSummary(dailyOrderSummaries, range) {
+    if (
+      !Array.isArray(dailyOrderSummaries) ||
+      dailyOrderSummaries.length === 0
+    ) {
+      return { served: 0, dineIn: 0, takeAway: 0 };
+    }
+
+    if (range === "weekly") {
+      const last7 = dailyOrderSummaries.slice(-7);
+      return last7.reduce(
+        (acc, day) => ({
+          served: acc.served + (day.served || 0),
+          dineIn: acc.dineIn + (day.dineIn || 0),
+          takeAway: acc.takeAway + (day.takeAway || 0),
+        }),
+        { served: 0, dineIn: 0, takeAway: 0 }
+      );
+    }
+
+    if (range === "monthly") {
+      const last30 = dailyOrderSummaries.slice(-30);
+      return last30.reduce(
+        (acc, day) => ({
+          served: acc.served + (day.served || 0),
+          dineIn: acc.dineIn + (day.dineIn || 0),
+          takeAway: acc.takeAway + (day.takeAway || 0),
+        }),
+        { served: 0, dineIn: 0, takeAway: 0 }
+      );
+    }
+
+    const last = dailyOrderSummaries[dailyOrderSummaries.length - 1];
+    return {
+      served: last.served || 0,
+      dineIn: last.dineIn || 0,
+      takeAway: last.takeAway || 0,
+    };
+  }
+
+  function aggregateRevenue(dailyRevenue, range) {
+    if (!Array.isArray(dailyRevenue) || dailyRevenue.length === 0) return [];
+
+    if (range === "weekly") {
+      const weeks = [];
+      const last28 = dailyRevenue.slice(-28);
+      for (let i = 0; i < 4; i++) {
+        const weekData = last28.slice(i * 7, (i + 1) * 7);
+        const revenue = weekData.reduce(
+          (sum, item) => sum + (item.revenue || item.totalRevenue || 0),
+          0
+        );
+        weeks.push({ label: `Week ${i + 1}`, revenue });
+      }
+      return weeks;
+    }
+
+    if (range === "monthly") {
+      const hasDate = dailyRevenue.some((item) => !!item.date);
+      if (!hasDate) {
+        const revenue = dailyRevenue.reduce(
+          (sum, item) => sum + (item.revenue || item.totalRevenue || 0),
+          0
+        );
+        return [{ label: "This Month", revenue }];
+      }
+
+      const monthsMap = {};
+      dailyRevenue.forEach((item) => {
+        let label = "";
+        if (item.date) {
+          const date = new Date(item.date);
+          if (!isNaN(date)) {
+            label = date.toLocaleString("default", {
+              month: "short",
+              year: "2-digit",
+            });
+          }
+        }
+        if (label) {
+          monthsMap[label] =
+            (monthsMap[label] || 0) + (item.revenue || item.totalRevenue || 0);
+        }
+      });
+      const monthLabels = Object.keys(monthsMap).slice(-3);
+      return monthLabels.map((label) => ({ label, revenue: monthsMap[label] }));
+    }
+
+    const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const dayMap = {};
+    dailyRevenue.forEach((item) => {
+      if (typeof item.day === "number") {
+        dayMap[item.day] = item.revenue || item.totalRevenue || 0;
+      }
+    });
+    const fullWeek = dayNames.map((name, idx) => ({
+      label: name,
+      revenue: dayMap[idx] || 0,
+    }));
+    return fullWeek;
+  }
+
+  const dailyOrderSummaries = Array.isArray(dashboardData.dailyOrderSummary)
+    ? dashboardData.dailyOrderSummary
+    : [];
+  const orderSummaryData = aggregateOrderSummary(
+    dailyOrderSummaries,
+    orderFilter
+  );
+
+  const rawDailyRevenue = Array.isArray(dashboardData.dailyRevenue)
+    ? dashboardData.dailyRevenue
+    : [];
+  const revenueDataChart = aggregateRevenue(rawDailyRevenue, revenueFilter);
+
   if (loading) return <div className="main-content">Loading dashboard...</div>;
   if (error) return <div className="main-content">{error.message}</div>;
 
-  // Render the main dashboard structure once not loading or in error state
   return (
     <main className="main-content">
       <header
@@ -304,31 +390,27 @@ function Dashboard({ dashboardData, orderSummary, loading, error }) {
       <section className="dashboard">
         <div className="dashboard-cards">
           <div className="dashboard-card">
-            <div className="card-title">
-              {safe(String(dashboardData?.totalChefs).padStart(2, "0"))}
+            <FaUsers className="card-icon" />
+            <div className="card-content">
+              <h3>Total Customers</h3>
+              <p>{orderSummaryData.served}</p>
             </div>
-            <div className="card-desc">TOTAL CHEF</div>
           </div>
           <div className="dashboard-card">
-            <div className="card-title">
-              ₹{" "}
-              {safeNum(dashboardData?.totalRevenue) !== "--"
-                ? safeNum(dashboardData?.totalRevenue).toLocaleString()
-                : "--"}
+            <FaUtensils className="card-icon" />
+            <div className="card-content">
+              <h3>Total Orders</h3>
+              <p>{orderSummaryData.dineIn + orderSummaryData.takeAway}</p>
             </div>
-            <div className="card-desc">TOTAL REVENUE</div>
           </div>
           <div className="dashboard-card">
-            <div className="card-title">
-              {safe(String(dashboardData?.totalOrders).padStart(2, "0"))}
+            <FaMoneyBillWave className="card-icon" />
+            <div className="card-content">
+              <h3>Total Revenue</h3>
+              <p>
+                ₹{revenueDataChart.reduce((sum, item) => sum + item.revenue, 0)}
+              </p>
             </div>
-            <div className="card-desc">TOTAL ORDER</div>
-          </div>
-          <div className="dashboard-card">
-            <div className="card-title">
-              {safe(String(dashboardData?.totalClients).padStart(2, "0"))}
-            </div>
-            <div className="card-desc">TOTAL CLIENT</div>
           </div>
         </div>
         <div
@@ -359,209 +441,48 @@ function Dashboard({ dashboardData, orderSummary, loading, error }) {
           </select>
         </div>
         <div className="dashboard-analytics">
-          {/* Order Summary Pie Chart */}
-          <div className="order-summary" ref={pieContainerRef}>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                width: "100%",
-                marginBottom: 24,
-              }}
-            >
-              <h3 className="summary-title" style={{ margin: 0 }}>
-                Order Summary
-              </h3>
+          <div className="order-summary">
+            <div className="section-header">
+              <h2>Order Summary</h2>
               <select
-                value={summaryRange}
-                onChange={(e) => setSummaryRange(e.target.value)}
-                style={{
-                  padding: "8px 18px",
-                  borderRadius: 20,
-                  border: "1.5px solid #e0e0e0",
-                  fontWeight: 500,
-                  fontSize: 16,
-                  background: "#f7f9f9",
-                  outline: "none",
-                  cursor: "pointer",
-                }}
+                value={orderFilter}
+                onChange={(e) => setOrderFilter(e.target.value)}
+                className="filter-select"
               >
                 <option value="daily">Daily</option>
                 <option value="weekly">Weekly</option>
                 <option value="monthly">Monthly</option>
               </select>
             </div>
-            <div
-              style={{
-                display: "flex",
-                gap: 24,
-                marginBottom: 24,
-                justifyContent: "center",
-                width: "100%",
-              }}
-            >
-              <div
-                style={{
-                  background: "#f7f9f9",
-                  border: "1.5px solid #e0e0e0",
-                  borderRadius: 16,
-                  minWidth: 90,
-                  minHeight: 80,
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontWeight: 600,
-                  fontSize: 28,
-                  color: "#444",
-                  boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
-                }}
-              >
-                <div style={{ fontSize: 32, fontWeight: 700 }}>
-                  {safe(
-                    String(dashboardData.orderSummary?.served || 0).padStart(
-                      2,
-                      "0"
-                    )
-                  )}
-                </div>
-                <div
-                  style={{
-                    fontSize: 16,
-                    color: "#888",
-                    fontWeight: 500,
-                    marginTop: 4,
-                  }}
-                >
-                  Served
-                </div>
-              </div>
-              <div
-                style={{
-                  background: "#f7f9f9",
-                  border: "1.5px solid #e0e0e0",
-                  borderRadius: 16,
-                  minWidth: 90,
-                  minHeight: 80,
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontWeight: 600,
-                  fontSize: 28,
-                  color: "#444",
-                  boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
-                }}
-              >
-                <div style={{ fontSize: 32, fontWeight: 700 }}>
-                  {safe(
-                    String(dashboardData.orderSummary?.dineIn || 0).padStart(
-                      2,
-                      "0"
-                    )
-                  )}
-                </div>
-                <div
-                  style={{
-                    fontSize: 16,
-                    color: "#888",
-                    fontWeight: 500,
-                    marginTop: 4,
-                  }}
-                >
-                  Dine In
-                </div>
-              </div>
-              <div
-                style={{
-                  background: "#f7f9f9",
-                  border: "1.5px solid #e0e0e0",
-                  borderRadius: 16,
-                  minWidth: 90,
-                  minHeight: 80,
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontWeight: 600,
-                  fontSize: 28,
-                  color: "#444",
-                  boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
-                }}
-              >
-                <div style={{ fontSize: 32, fontWeight: 700 }}>
-                  {safe(
-                    String(dashboardData.orderSummary?.takeAway || 0).padStart(
-                      2,
-                      "0"
-                    )
-                  )}
-                </div>
-                <div
-                  style={{
-                    fontSize: 16,
-                    color: "#888",
-                    fontWeight: 500,
-                    marginTop: 4,
-                  }}
-                >
-                  Take Away
-                </div>
-              </div>
-            </div>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 32,
-                width: "100%",
-                justifyContent: "center",
-              }}
-            >
-              <OrderSummaryDonut
-                served={dashboardData.orderSummary?.served || 0}
-                dineIn={dashboardData.orderSummary?.dineIn || 0}
-                takeAway={dashboardData.orderSummary?.takeAway || 0}
-                summaryRange={summaryRange}
-              />
-            </div>
+            <OrderSummaryDonut
+              served={orderSummaryData.served}
+              dineIn={orderSummaryData.dineIn}
+              takeAway={orderSummaryData.takeAway}
+            />
           </div>
 
-          {/* Daily Revenue Line Chart */}
-          <div className="revenue-chart" ref={lineContainerRef}>
-            <h3 className="summary-title">Daily Revenue</h3>
-            {revenueData.length > 0 ? (
-              <RevenueChart data={revenueData} revenueDomain={revenueDomain} />
-            ) : (
-              <p>No revenue data available for the selected range.</p>
-            )}
-          </div>
-
-          {/* Tables Status */}
-          <div className="tables-status">
-            <h3 className="summary-title">Tables Status</h3>
-            {getFilteredTables.length > 0 ? (
-              <div className="tables-grid">
-                {getFilteredTables.map((table) => (
-                  <div
-                    key={table.tableNumber}
-                    className={`table-box ${table.status}`}
-                  >
-                    <div className="table-number">{table.tableNumber}</div>
-                    <div className="table-details">
-                      <div className="table-chairs">🪑 {table.chairs}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p>No tables found matching the filter.</p>
-            )}
+          <div className="revenue-chart">
+            <div className="section-header">
+              <h2>Daily Revenue</h2>
+              <select
+                value={revenueFilter}
+                onChange={(e) => setRevenueFilter(e.target.value)}
+                className="filter-select"
+              >
+                <option value="daily">Daily</option>
+                <option value="weekly">Weekly</option>
+                <option value="monthly">Monthly</option>
+              </select>
+            </div>
+            <RevenueChart data={revenueDataChart} />
           </div>
         </div>
 
-        {/* Chefs Table */}
+        <div className="tables-status">
+          <h2>Tables Status</h2>
+          <TablesStatus tables={getFilteredTables} />
+        </div>
+
         <div className="chefs-table">
           <h3 className="summary-title">Chefs Order Count</h3>
           {getFilteredChefOrders.length > 0 ? (
@@ -585,23 +506,6 @@ function Dashboard({ dashboardData, orderSummary, loading, error }) {
             <p>No chef data available matching the filter.</p>
           )}
         </div>
-
-        {/* Order List (Optional, can be added later) */}
-        {/*
-        <div className="order-list">
-           <h3 className="summary-title">Recent Orders</h3>
-           {getFilteredOrders.length > 0 ? (
-              // Render a list or table of filtered orders here
-              <ul>
-                 {getFilteredOrders.map(order => (
-                    <li key={order._id}>{order._id} - {order.status}</li> // Basic example
-                 ))}
-              </ul>
-           ) : (
-              <p>No orders found matching the filter.</p>
-           )}
-        </div>
-        */}
       </section>
     </main>
   );

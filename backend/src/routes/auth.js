@@ -4,12 +4,10 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const { protect } = require("../middleware/auth");
 
-// Register user
 router.post("/register", async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
 
-    // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({
@@ -18,7 +16,6 @@ router.post("/register", async (req, res) => {
       });
     }
 
-    // Create user
     const user = await User.create({
       name,
       email,
@@ -26,7 +23,6 @@ router.post("/register", async (req, res) => {
       role: role || "staff",
     });
 
-    // Create token
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
       expiresIn: process.env.JWT_EXPIRE,
     });
@@ -49,12 +45,10 @@ router.post("/register", async (req, res) => {
   }
 });
 
-// Login user
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Check if user exists
     const user = await User.findOne({ email }).select("+password");
     if (!user) {
       return res.status(401).json({
@@ -63,7 +57,6 @@ router.post("/login", async (req, res) => {
       });
     }
 
-    // Check if password matches
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
       return res.status(401).json({
@@ -72,7 +65,6 @@ router.post("/login", async (req, res) => {
       });
     }
 
-    // Create token
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
       expiresIn: process.env.JWT_EXPIRE,
     });
@@ -95,7 +87,6 @@ router.post("/login", async (req, res) => {
   }
 });
 
-// Get current user
 router.get("/me", protect, async (req, res) => {
   try {
     const user = await User.findById(req.user.id);

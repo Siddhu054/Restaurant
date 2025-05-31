@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import "../App.css"; // Assuming shared styles or create a new css file
-import axiosInstance from "../api/axios"; // Import axiosInstance
+import "../App.css";
+import axiosInstance from "../api/axios";
 
 function TableManagement() {
   const [tables, setTables] = useState([]);
@@ -10,12 +10,11 @@ function TableManagement() {
   const [newTableData, setNewTableData] = useState({
     tableNumber: "",
     name: "",
-    chairs: 4, // Default chairs
-    status: "available", // Default status
+    chairs: 4,
+    status: "available",
   });
-  const [editingTable, setEditingTable] = useState(null); // State to hold the table being edited
+  const [editingTable, setEditingTable] = useState(null);
   const [editTableData, setEditTableData] = useState({
-    // State to hold data for the edit form
     tableNumber: "",
     name: "",
     chairs: 4,
@@ -29,7 +28,7 @@ function TableManagement() {
   const fetchTables = async () => {
     try {
       const { data } = await axiosInstance.get("/api/tables");
-      // Ensure tableNumber is padded with leading zeros for consistent display
+
       const formattedTables = data.map((table) => ({
         ...table,
         tableNumber: String(table.tableNumber).padStart(2, "0"),
@@ -56,9 +55,9 @@ function TableManagement() {
     e.preventDefault();
     try {
       const { data } = await axiosInstance.post("/api/tables", newTableData);
-      // After successful creation, refetch tables to update the list
+
       fetchTables();
-      // Reset form and hide it
+
       setNewTableData({
         tableNumber: "",
         name: "",
@@ -76,7 +75,7 @@ function TableManagement() {
     if (window.confirm("Are you sure you want to delete this table?")) {
       try {
         await axiosInstance.delete(`/api/tables/${id}`);
-        // After successful deletion, refetch tables
+
         fetchTables();
       } catch (err) {
         setError(`Failed to delete table: ${err.message}`);
@@ -89,7 +88,7 @@ function TableManagement() {
     setEditingTable(table);
     setEditTableData({
       tableNumber: table.tableNumber,
-      name: table.name || "", // Handle potential null/undefined name
+      name: table.name || "",
       chairs: table.chairs,
       status: table.status,
     });
@@ -107,10 +106,9 @@ function TableManagement() {
 
   const handleUpdateTable = async (e) => {
     e.preventDefault();
-    if (!editingTable) return; // Should not happen if edit form is shown correctly
+    if (!editingTable) return;
 
     try {
-      // Note: Remove leading zeros from tableNumber before sending to backend
       const tableNumberToSend = parseInt(editTableData.tableNumber, 10);
       if (isNaN(tableNumberToSend)) {
         throw new Error("Invalid table number.");
@@ -120,12 +118,12 @@ function TableManagement() {
         `/api/tables/${editingTable._id}`,
         {
           ...editTableData,
-          tableNumber: tableNumberToSend, // Use parsed integer
+          tableNumber: tableNumberToSend,
         }
       );
-      // After successful update, refetch tables
+
       fetchTables();
-      // Close edit form
+
       handleCancelEdit();
     } catch (err) {
       setError(`Failed to update table: ${err.message}`);
@@ -275,7 +273,7 @@ function TableManagement() {
                 {/* Container for action buttons */}
                 <button
                   onClick={() => handleEditClick(table)}
-                  className="edit-table-button" // Add a class for styling
+                  className="edit-table-button"
                 >
                   ✏️ {/* Edit icon */}
                 </button>

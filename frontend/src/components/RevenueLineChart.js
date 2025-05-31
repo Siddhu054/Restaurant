@@ -14,7 +14,6 @@ function RevenueLineChart({ lineData, size, revenueDomain }) {
   const safeNum = (val, fallback = "--") =>
     val !== undefined && val !== null && !isNaN(val) ? Number(val) : fallback;
 
-  // Map day numbers (0-6) to day names (Monday to Sunday)
   const dayNames = [
     "Sunday",
     "Monday",
@@ -25,10 +24,8 @@ function RevenueLineChart({ lineData, size, revenueDomain }) {
     "Saturday",
   ];
 
-  // Extract unique day numbers for ticks
   const uniqueDays = Array.from(new Set(lineData.map((item) => item.day)));
 
-  // Sort unique days to ensure correct order on the axis
   uniqueDays.sort((a, b) => a - b);
 
   return (

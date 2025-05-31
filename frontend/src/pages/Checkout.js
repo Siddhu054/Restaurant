@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import axiosInstance from "../api/axios"; // Import axiosInstance
+import axiosInstance from "../api/axios";
 import "./Checkout.css";
 
 function Checkout() {
   const location = useLocation();
   const navigate = useNavigate();
-  const orderData = location.state?.orderData; // Get order data from navigation state
+  const orderData = location.state?.orderData;
 
   const [paymentMethod, setPaymentMethod] = useState("");
   const [notes, setNotes] = useState("");
@@ -14,16 +14,15 @@ function Checkout() {
   const [submitError, setSubmitError] = useState(null);
 
   useEffect(() => {
-    // If no order data, redirect back to POS or Menu
     if (!orderData || !orderData.items || orderData.items.length === 0) {
-      navigate("/pos"); // Redirect to POS if no order data
+      navigate("/pos");
     }
   }, [orderData, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsSubmitting(true); // Disable button on submit
-    setSubmitError(null); // Clear previous errors
+    setIsSubmitting(true);
+    setSubmitError(null);
 
     if (!paymentMethod) {
       setSubmitError("Please select a payment method.");
@@ -35,32 +34,26 @@ function Checkout() {
       ...orderData,
       paymentMethod,
       notes,
-      status: "processing", // Set initial status
+      status: "processing",
     };
 
-    // Ensure correct structure for items array for backend
     if (orderSubmission.items && Array.isArray(orderSubmission.items)) {
       orderSubmission.items = orderSubmission.items.map((item) => ({
-        menuItem: item.id, // Assuming the backend expects 'menuItem' as the ID
+        menuItem: item.id,
         quantity: item.quantity,
-        // Add other relevant item details if needed by backend
       }));
     }
 
-    // Log data being sent
     console.log("Submitting order:", orderSubmission);
 
     try {
-      // Use axiosInstance for API call
       const { data } = await axiosInstance.post("/api/orders", orderSubmission);
 
-      console.log("Order successfully submitted:", data); // Log confirmed order from backend
+      console.log("Order successfully submitted:", data);
 
       if (data.success) {
-        // Navigate to order confirmation page with the confirmed order data
         navigate("/order-confirmation", { state: { order: data.order } });
       } else {
-        // Handle backend specific errors
         setSubmitError(data.message || "Failed to place order");
       }
     } catch (err) {
@@ -69,22 +62,21 @@ function Checkout() {
         `Failed to place order: ${err.response?.data?.message || err.message}`
       );
     } finally {
-      setIsSubmitting(false); // Enable button
+      setIsSubmitting(false);
     }
   };
 
   if (!orderData || !orderData.items || orderData.items.length === 0) {
-    return null; // Or a loading indicator
+    return null;
   }
 
-  // Add default values for numerical properties if they are undefined or null
   const safeOrderData = {
     ...orderData,
     itemTotal: Number(orderData.itemTotal) || 0,
     deliveryCharge: Number(orderData.deliveryCharge) || 0,
     taxes: Number(orderData.taxes) || 0,
     grandTotal: Number(orderData.grandTotal) || 0,
-    // Ensure items and customerDetails are not lost
+
     items: orderData.items || [],
     customerDetails: orderData.customerDetails || {},
     deliveryInfo: orderData.deliveryInfo || {},

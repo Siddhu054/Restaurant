@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axiosInstance from "../api/axios"; // Import axiosInstance
-import "./Menu.css"; // We will create this file next
+import axiosInstance from "../api/axios";
+import "./Menu.css";
 
 function Menu() {
-  const [selectedCategory, setSelectedCategory] = useState("All"); // State for active category
+  const [selectedCategory, setSelectedCategory] = useState("All");
   const categories = [
     "All",
     "Drink",
@@ -12,16 +12,15 @@ function Menu() {
     "Pizza",
     "French Fries",
     "Veggies",
-  ]; // List of categories
-  const [menuItems, setMenuItems] = useState([]); // State to store menu items
-  const [loading, setLoading] = useState(true); // State for loading indicator
-  const [error, setError] = useState(null); // State for error handling
-  const [cart, setCart] = useState({}); // State to store cart items: { itemId: quantity }
-  const [orderType, setOrderType] = useState("dine-in"); // Add orderType state
+  ];
+  const [menuItems, setMenuItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [cart, setCart] = useState({});
+  const [orderType, setOrderType] = useState("dine-in");
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
 
-  // Effect to fetch menu items when selectedCategory changes
   useEffect(() => {
     const fetchMenuItems = async () => {
       setLoading(true);
@@ -33,7 +32,7 @@ function Menu() {
         const { data } = await axiosInstance.get(`/api/menu${categoryQuery}`);
         setMenuItems(data);
       } catch (err) {
-        setError("Failed to fetch menu items"); // Consider more specific error from backend if available
+        setError("Failed to fetch menu items");
         console.error(
           "Error fetching menu items:",
           err.response?.data?.message || err.message
@@ -44,15 +43,14 @@ function Menu() {
     };
 
     fetchMenuItems();
-  }, [selectedCategory]); // Rerun effect when selectedCategory changes
+  }, [selectedCategory]);
 
   const handleCategoryClick = (category) => {
     setSelectedCategory(category);
-    // Future: Fetch menu items for this category
+
     console.log(`Category selected: ${category}`);
   };
 
-  // Handle adding item to cart
   const handleAddToCart = (item) => {
     setCart((prevCart) => ({
       ...prevCart,
@@ -60,33 +58,26 @@ function Menu() {
     }));
   };
 
-  // Handle removing item from cart
   const handleRemoveFromCart = (item) => {
     setCart((prevCart) => {
       const newCart = { ...prevCart };
       if (newCart[item._id] && newCart[item._id] > 0) {
         newCart[item._id] -= 1;
         if (newCart[item._id] === 0) {
-          delete newCart[item._id]; // Remove item if quantity is zero
+          delete newCart[item._id];
         }
       }
       return newCart;
     });
   };
 
-  // Helper to get item quantity in cart
   const getItemQuantity = (itemId) => {
     return cart[itemId] || 0;
   };
 
-  // Calculate cart summary
   const calculateCartSummary = () => {
     let itemTotal = 0;
-    // Assuming menuItems state is populated with all available items
-    // It might be more efficient to have a separate state or map for quick item lookup by ID
-    // For now, we'll iterate through menuItems to find the price.
-    // A more robust solution would be to get the price from the backend when adding to cart,
-    // or build a map like { itemId: { price, name, ... } } from fetched menuItems.
+
     const itemsInCartDetails = Object.keys(cart)
       .map((itemId) => {
         const item = menuItems.find((menuItem) => menuItem._id === itemId);
@@ -94,21 +85,20 @@ function Menu() {
           itemTotal += item.price * cart[itemId];
           return { ...item, quantity: cart[itemId] };
         }
-        return null; // Should not happen if item is in cart and menuItems are loaded
+        return null;
       })
-      .filter((item) => item !== null); // Filter out any potential nulls
+      .filter((item) => item !== null);
 
-    // Placeholder values for now
-    const deliveryCharge = itemTotal > 0 ? 50 : 0; // Example: free delivery if order is 0
-    const taxes = itemTotal > 0 ? itemTotal * 0.1 : 0; // Example: 10% tax if order > 0
+    const deliveryCharge = itemTotal > 0 ? 50 : 0;
+    const taxes = itemTotal > 0 ? itemTotal * 0.1 : 0;
     const grandTotal = itemTotal + deliveryCharge + taxes;
 
     return {
       items: itemsInCartDetails,
-      itemTotal: itemTotal, // Return as number before toFixed for calculations
-      deliveryCharge: deliveryCharge, // Return as number
-      taxes: taxes, // Return as number
-      grandTotal: grandTotal, // Return as number
+      itemTotal: itemTotal,
+      deliveryCharge: deliveryCharge,
+      taxes: taxes,
+      grandTotal: grandTotal,
     };
   };
 
@@ -116,46 +106,40 @@ function Menu() {
 
   const handleOrderTypeChange = (type) => {
     setOrderType(type);
-    // You can add additional logic here if needed when order type changes
   };
 
   const handleNext = () => {
     if (Object.keys(cart).length === 0) return;
 
-    // Prepare order data
     const orderData = {
       items: Object.entries(cart).map(([itemId, quantity]) => {
         const item = menuItems.find((menuItem) => menuItem._id === itemId);
-        // Pass necessary item details for display on checkout, using data from menuItems state
+
         return {
           _id: item._id,
           name: item.name,
-          price: item.price, // Pass item price as number
+          price: item.price,
           quantity: quantity,
           // cookingInstructions: item.cookingInstructions, // Include if per item instructions needed
         };
       }),
-      orderType, // Include order type
-      itemTotal: cartSummary.itemTotal, // Include calculated item total
-      deliveryCharge: cartSummary.deliveryCharge, // Include calculated delivery charge
-      taxes: cartSummary.taxes, // Include calculated taxes
-      grandTotal: cartSummary.grandTotal, // Include calculated grand total
-      // Add placeholder deliveryInfo structure expected by backend if needed for consistency
+      orderType,
+      itemTotal: cartSummary.itemTotal,
+      deliveryCharge: cartSummary.deliveryCharge,
+      taxes: cartSummary.taxes,
+      grandTotal: cartSummary.grandTotal,
+
       deliveryInfo: {
-        estimatedTime: "42", // Placeholder
-        cookingInstructions: "", // Placeholder - will be filled on checkout
-        // deliveryCharge and taxes are now at the top level, but backend expects them nested
-        // Let's align frontend passing with backend expectation for deliveryInfo
-        // Reverting backend change to accept deliveryCharge/taxes at top level
-        // And passing deliveryCharge/taxes within deliveryInfo from frontend
+        estimatedTime: "42",
+        cookingInstructions: "",
+
         deliveryCharge: cartSummary.deliveryCharge,
         taxes: cartSummary.taxes,
       },
     };
 
-    console.log("Navigating to checkout with orderData:", orderData); // Log data being passed
+    console.log("Navigating to checkout with orderData:", orderData);
 
-    // Navigate to checkout with order data
     navigate("/checkout", { state: { orderData } });
   };
 

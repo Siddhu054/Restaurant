@@ -2,7 +2,6 @@ const express = require("express");
 const router = express.Router();
 const Table = require("../models/Table");
 
-// GET all tables
 router.get("/", async (req, res) => {
   try {
     const tables = await Table.find({});
@@ -12,11 +11,9 @@ router.get("/", async (req, res) => {
   }
 });
 
-// POST create new table
 router.post("/", async (req, res) => {
   const { tableNumber, name, chairs, status } = req.body;
 
-  // Basic validation
   if (!tableNumber || !chairs) {
     return res
       .status(400)
@@ -27,14 +24,13 @@ router.post("/", async (req, res) => {
     tableNumber,
     name,
     chairs,
-    status: status || "available", // Default to available if not provided
+    status: status || "available",
   });
 
   try {
     const savedTable = await newTable.save();
     res.status(201).json(savedTable);
   } catch (err) {
-    // Handle potential duplicate table number error
     if (err.code === 11000) {
       return res.status(400).json({ message: "Table number already exists." });
     }
@@ -42,7 +38,6 @@ router.post("/", async (req, res) => {
   }
 });
 
-// GET single table by ID (Optional, but good for updates)
 router.get("/:id", async (req, res) => {
   try {
     const table = await Table.findById(req.params.id);
@@ -55,7 +50,6 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// PUT update table by ID
 router.put("/:id", async (req, res) => {
   try {
     const table = await Table.findById(req.params.id);
@@ -63,7 +57,6 @@ router.put("/:id", async (req, res) => {
       return res.status(404).json({ message: "Table not found." });
     }
 
-    // Update fields if they exist in the request body
     if (req.body.tableNumber != null) {
       table.tableNumber = req.body.tableNumber;
     }
@@ -80,7 +73,6 @@ router.put("/:id", async (req, res) => {
     const updatedTable = await table.save();
     res.json(updatedTable);
   } catch (err) {
-    // Handle potential duplicate table number error during update
     if (err.code === 11000) {
       return res.status(400).json({ message: "Table number already exists." });
     }
@@ -88,7 +80,6 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-// DELETE table by ID
 router.delete("/:id", async (req, res) => {
   try {
     const table = await Table.findById(req.params.id);
@@ -96,7 +87,7 @@ router.delete("/:id", async (req, res) => {
       return res.status(404).json({ message: "Table not found." });
     }
 
-    await table.deleteOne(); // Use deleteOne() or remove() depending on Mongoose version
+    await table.deleteOne();
     res.json({ message: "Table deleted." });
   } catch (err) {
     res.status(500).json({ message: err.message });

@@ -3,7 +3,6 @@ exports.createOrder = async (req, res) => {
     const { items, customerDetails, orderType, deliveryInfo, table, total } =
       req.body;
 
-    // Create new order
     const newOrder = new Order({
       items,
       customerDetails,
@@ -15,10 +14,8 @@ exports.createOrder = async (req, res) => {
       orderTime: new Date(),
     });
 
-    // Save the order
     const savedOrder = await newOrder.save();
 
-    // Populate the menuItem details
     const populatedOrder = await Order.findById(savedOrder._id).populate({
       path: "items.menuItem",
       select: "name price",

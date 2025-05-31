@@ -6,12 +6,10 @@ const Order = require("./src/models/Order");
 async function seed() {
   await mongoose.connect("mongodb://localhost:27017/restaurant-pos");
 
-  // Clear existing data
   await User.deleteMany({});
   await Table.deleteMany({});
   await Order.deleteMany({});
 
-  // Create chefs
   const chefs = await User.insertMany([
     {
       name: "Manesh",
@@ -39,7 +37,6 @@ async function seed() {
     },
   ]);
 
-  // Create tables
   const tables = await Table.insertMany(
     Array.from({ length: 30 }, (_, i) => ({
       tableNumber: (i + 1).toString().padStart(2, "0"),
@@ -48,7 +45,6 @@ async function seed() {
     }))
   );
 
-  // Create orders
   await Order.insertMany([
     {
       orderNumber: "ORD2405210001",
@@ -80,7 +76,6 @@ async function seed() {
       startTime: new Date(),
       createdAt: new Date(),
     },
-    // Add more orders as needed
   ]);
 
   console.log("Database seeded!");

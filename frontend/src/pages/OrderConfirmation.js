@@ -1,11 +1,11 @@
 import React, { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import "./OrderConfirmation.css"; // We will create this file next
+import "./OrderConfirmation.css";
 
 function OrderConfirmation() {
   const location = useLocation();
   const navigate = useNavigate();
-  // Use localStorage fallback for order data
+
   const { order: passedOrder } = location.state || {};
   const storedOrder = (() => {
     try {
@@ -16,7 +16,6 @@ function OrderConfirmation() {
   })();
   const order = passedOrder || storedOrder;
 
-  // Improved debugging
   useEffect(() => {
     console.log("Full Order object:", order);
     if (order) {
@@ -25,14 +24,12 @@ function OrderConfirmation() {
     }
   }, [order]);
 
-  // Redirect to menu if no order data is found (e.g., direct access or refresh)
   useEffect(() => {
     if (!order) {
       navigate("/menu", { replace: true });
     }
   }, [order, navigate]);
 
-  // If no order data, show a loading/redirecting message or null
   if (!order) {
     return <div className="order-confirmation-container">Redirecting...</div>;
   }
@@ -73,7 +70,6 @@ function OrderConfirmation() {
             let itemName = "Unknown Item";
             let itemPrice = 0;
 
-            // Check if item.menuItem exists and is an object with a name
             if (
               item?.menuItem &&
               typeof item.menuItem === "object" &&
@@ -82,17 +78,14 @@ function OrderConfirmation() {
               itemName = item.menuItem.name;
               itemPrice = item.menuItem.price || 0;
             } else if (item?.name) {
-              // Fallback to item.name if available on the item itself
               itemName = item.name;
               itemPrice = item.price || 0;
             } else if (typeof item?.menuItem === "string") {
-              // Fallback if menuItem is just an ID string
-              itemName = `Item ID: ${item.menuItem}`; // Display the ID if name is not available
+              itemName = `Item ID: ${item.menuItem}`;
               itemPrice = item.price || 0;
             }
 
             return (
-              // Use a combination of order item ID and index for the key if item._id is not reliable here
               <li key={item._id || `item-${index}`} className="ordered-item">
                 <span>
                   {item.quantity}x {itemName}

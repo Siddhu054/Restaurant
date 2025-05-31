@@ -2,7 +2,6 @@ const express = require("express");
 const router = express.Router();
 const User = require("../models/User");
 
-// Get all chefs
 router.get("/", async (req, res) => {
   try {
     const chefs = await User.find({ role: "chef" }, { name: 1 });

@@ -8,17 +8,14 @@ import {
   Legend,
 } from "recharts";
 
-// Custom colors for the pie chart segments
 const COLORS = ["#FF6B6B", "#4ECDC4", "#45B7D1"];
 
 function OrderSummaryPieChart({ pieData, size }) {
   const safeNum = (val, fallback = "--") =>
     val !== undefined && val !== null && !isNaN(val) ? Number(val) : fallback;
 
-  // Calculate total value for percentages
   const total = pieData.reduce((sum, entry) => sum + entry.value, 0);
 
-  // Custom Legend Component
   const CustomLegend = ({ payload }) => {
     return (
       <ul
