@@ -16,64 +16,18 @@ function Dashboard({ dashboardData, orderSummary, loading, error }) {
   const safeNum = (val, fallback = "--") =>
     val !== undefined && val !== null && !isNaN(val) ? Number(val) : fallback;
 
-  const pieData = useMemo(() => {
-    // Use the aggregated orderSummaryData here
-    return orderSummaryData
-      ? [
-          { name: "Served", value: orderSummaryData.served || 0 },
-          { name: "Dine In", value: orderSummaryData.dineIn || 0 },
-          {
-            name: "Take Away",
-            value: orderSummaryData.takeAway || 0,
-          },
-        ].filter((item) => item.value > 0)
-      : [];
-  }, [orderSummaryData]); // Depend on orderSummaryData
+  const navigate = useNavigate();
+  const [orderFilter, setOrderFilter] = useState("daily");
+  const [revenueFilter, setRevenueFilter] = useState("daily");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filters, setFilters] = useState({
+    analytics: "all",
+    tableStatus: "all",
+    orderType: "all",
+  });
+  const [summaryRange, setSummaryRange] = useState("daily");
 
-  const lineData = useMemo(() => {
-    const transformedData = dashboardData?.dailyRevenue
-      ? dashboardData.dailyRevenue.map((item) => ({
-          day: item.day,
-          revenue: item.totalRevenue,
-        }))
-      : [];
-
-    console.log("Generated lineData:", transformedData);
-
-    return transformedData;
-  }, [dashboardData?.dailyRevenue]);
-
-  const revenueData = useMemo(() => {
-    const weeklyData = [0, 1, 2, 3, 4, 5, 6].map((dayIndex) => ({
-      day: dayIndex,
-      revenue: 0,
-    }));
-
-    if (dashboardData?.dailyRevenue) {
-      dashboardData.dailyRevenue.forEach((item) => {
-        const date = new Date(item.date);
-
-        const dayOfWeek = date.getDay();
-
-        const weeklyEntry = weeklyData.find((entry) => entry.day === dayOfWeek);
-        if (weeklyEntry) {
-          weeklyEntry.revenue += item.totalRevenue;
-        }
-      });
-    } else {
-      console.warn(
-        "dashboardData.dailyRevenue is null or undefined.",
-        dashboardData?.dailyRevenue
-      );
-    }
-
-    // weeklyData.sort((a, b) => a.day - b.day); // This line is likely not needed
-
-    console.log("Generated revenueData for chart (weekly view):", weeklyData);
-
-    return weeklyData;
-  }, [dashboardData?.dailyRevenue]);
-
+  // Refs for container sizing
   const pieContainerRef = useRef(null);
   const lineContainerRef = useRef(null);
 
@@ -86,148 +40,7 @@ function Dashboard({ dashboardData, orderSummary, loading, error }) {
     height: 0,
   });
 
-  const [searchQuery, setSearchQuery] = useState("");
-  const [filters, setFilters] = useState({
-    analytics: "all",
-    tableStatus: "all",
-    orderType: "all",
-  });
-
-  const [summaryRange, setSummaryRange] = useState("daily");
-
-  const getFilteredTables = useMemo(() => {
-    console.log("DEBUG: Raw tables data:", dashboardData?.tables);
-    let filtered = dashboardData?.tables || [];
-
-    if (filters.tableStatus !== "all") {
-      filtered = filtered.filter(
-        (table) => table.status === filters.tableStatus
-      );
-    }
-
-    if (filters.analytics !== "all" || filters.orderType !== "all") {
-      const matchingTableIds = new Set(
-        (dashboardData?.orders || [])
-          .filter((order) => {
-            const analyticsMatch =
-              filters.analytics === "all" || order.status === filters.analytics;
-            const orderTypeMatch =
-              filters.orderType === "all" || order.type === filters.orderType;
-            return analyticsMatch && orderTypeMatch && order.table;
-          })
-          .map((order) => order.table?._id || order.table)
-      );
-      filtered = filtered.filter(
-        (table) =>
-          matchingTableIds.has(table._id) ||
-          matchingTableIds.has(table.tableNumber)
-      );
-    }
-
-    if (searchQuery) {
-      filtered = filtered.filter((table) =>
-        String(table.tableNumber)
-          .toLowerCase()
-          .includes(searchQuery.toLowerCase())
-      );
-    }
-
-    console.log("DEBUG: Filtered tables:", filtered);
-    return filtered;
-  }, [
-    dashboardData?.tables,
-    dashboardData?.orders,
-    filters.tableStatus,
-    filters.analytics,
-    filters.orderType,
-    searchQuery,
-  ]);
-
-  const getFilteredChefOrders = useMemo(() => {
-    return (dashboardData?.chefOrders || []).filter((chef) => {
-      if (
-        searchQuery &&
-        !(
-          chef.name &&
-          chef.name.toLowerCase().includes(searchQuery.toLowerCase())
-        )
-      )
-        return false;
-      return true;
-    });
-  }, [dashboardData?.chefOrders, searchQuery]);
-
-  const getFilteredOrders = useMemo(() => {
-    return (dashboardData?.orders || []).filter((order) => {
-      if (filters.orderType !== "all" && order.type !== filters.orderType)
-        return false;
-      if (filters.analytics !== "all" && order.status !== filters.analytics)
-        return false;
-      if (searchQuery) {
-        const q = searchQuery.toLowerCase();
-        if (
-          !order._id.toLowerCase().includes(q) &&
-          !order.status.toLowerCase().includes(q) &&
-          !order.items.some((item) =>
-            item.menuItem?.name?.toLowerCase().includes(q)
-          )
-        ) {
-          return false;
-        }
-      }
-      return true;
-    });
-  }, [
-    dashboardData?.orders,
-    filters.orderType,
-    filters.analytics,
-    searchQuery,
-  ]);
-
-  const getFilteredMenuItems = useMemo(() => {
-    return (dashboardData?.menuItems || []).filter((item) => {
-      if (
-        searchQuery &&
-        !item.name.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-        return false;
-      return true;
-    });
-  }, [dashboardData?.menuItems, searchQuery]);
-
-  useEffect(() => {
-    const updateContainerSize = () => {
-      if (pieContainerRef.current) {
-        setPieContainerSize({
-          width: pieContainerRef.current.clientWidth,
-          height: pieContainerRef.current.clientHeight,
-        });
-      }
-      if (lineContainerRef.current) {
-        setLineContainerSize({
-          width: lineContainerRef.current.clientWidth,
-          height: lineContainerRef.current.clientHeight,
-        });
-      }
-    };
-
-    updateContainerSize();
-    window.addEventListener("resize", updateContainerSize);
-
-    return () => {
-      window.removeEventListener("resize", updateContainerSize);
-    };
-  }, [dashboardData]);
-
-  console.log("Pie Container Size:", pieContainerSize);
-  console.log("Line Container Size:", lineContainerSize);
-
-  const revenueDomain = [0, 6];
-
-  const navigate = useNavigate();
-  const [orderFilter, setOrderFilter] = useState("daily");
-  const [revenueFilter, setRevenueFilter] = useState("daily");
-
+  // Aggregation functions
   function aggregateOrderSummary(dailyOrderSummaries, range) {
     if (
       !Array.isArray(dailyOrderSummaries) ||
@@ -330,6 +143,7 @@ function Dashboard({ dashboardData, orderSummary, loading, error }) {
     return fullWeek;
   }
 
+  // Calculate data before useMemo hooks
   const dailyOrderSummaries = Array.isArray(dashboardData?.dailyOrderSummary)
     ? dashboardData.dailyOrderSummary
     : [];
@@ -353,6 +167,190 @@ function Dashboard({ dashboardData, orderSummary, loading, error }) {
     if (total === 0) return "0%";
     return `${Math.round((value / total) * 100)}%`;
   };
+
+  // Memoized data for charts
+  const pieData = useMemo(() => {
+    return orderSummaryData
+      ? [
+          { name: "Served", value: orderSummaryData.served || 0 },
+          { name: "Dine In", value: orderSummaryData.dineIn || 0 },
+          {
+            name: "Take Away",
+            value: orderSummaryData.takeAway || 0,
+          },
+        ].filter((item) => item.value > 0)
+      : [];
+  }, [orderSummaryData]);
+
+  const lineData = useMemo(() => {
+    const transformedData = dashboardData?.dailyRevenue
+      ? dashboardData.dailyRevenue.map((item) => ({
+          day: item.day,
+          revenue: item.totalRevenue,
+        }))
+      : [];
+
+    console.log("Generated lineData:", transformedData);
+
+    return transformedData;
+  }, [dashboardData?.dailyRevenue]);
+
+  const revenueData = useMemo(() => {
+    const weeklyData = [0, 1, 2, 3, 4, 5, 6].map((dayIndex) => ({
+      day: dayIndex,
+      revenue: 0,
+    }));
+
+    if (dashboardData?.dailyRevenue) {
+      dashboardData.dailyRevenue.forEach((item) => {
+        const date = new Date(item.date);
+        const dayOfWeek = date.getDay();
+        const weeklyEntry = weeklyData.find((entry) => entry.day === dayOfWeek);
+        if (weeklyEntry) {
+          weeklyEntry.revenue += item.totalRevenue;
+        }
+      });
+    } else {
+      console.warn(
+        "dashboardData.dailyRevenue is null or undefined.",
+        dashboardData?.dailyRevenue
+      );
+    }
+
+    console.log("Generated revenueData for chart (weekly view):", weeklyData);
+
+    return weeklyData;
+  }, [dashboardData?.dailyRevenue]);
+
+  // Effect for container resizing
+  useEffect(() => {
+    const updateContainerSize = () => {
+      if (pieContainerRef.current) {
+        setPieContainerSize({
+          width: pieContainerRef.current.clientWidth,
+          height: pieContainerRef.current.clientHeight,
+        });
+      }
+      if (lineContainerRef.current) {
+        setLineContainerSize({
+          width: lineContainerRef.current.clientWidth,
+          height: lineContainerRef.current.clientHeight,
+        });
+      }
+    };
+
+    updateContainerSize();
+    window.addEventListener("resize", updateContainerSize);
+
+    return () => {
+      window.removeEventListener("resize", updateContainerSize);
+    };
+  }, [dashboardData]);
+
+  const revenueDomain = [0, 6];
+
+  const getFilteredTables = useMemo(() => {
+    console.log("DEBUG: Raw tables data:", dashboardData?.tables);
+    let filtered = dashboardData?.tables || [];
+
+    if (filters.tableStatus !== "all") {
+      filtered = filtered.filter(
+        (table) => table.status === filters.tableStatus
+      );
+    }
+
+    if (filters.analytics !== "all" || filters.orderType !== "all") {
+      const matchingTableIds = new Set(
+        (dashboardData?.orders || [])
+          .filter((order) => {
+            const analyticsMatch =
+              filters.analytics === "all" || order.status === filters.analytics;
+            const orderTypeMatch =
+              filters.orderType === "all" || order.type === filters.orderType;
+            return analyticsMatch && orderTypeMatch && order.table;
+          })
+          .map((order) => order.table?._id || order.table)
+      );
+      filtered = filtered.filter(
+        (table) =>
+          matchingTableIds.has(table._id) ||
+          matchingTableIds.has(table.tableNumber)
+      );
+    }
+
+    if (searchQuery) {
+      filtered = filtered.filter((table) =>
+        String(table.tableNumber)
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase())
+      );
+    }
+
+    console.log("DEBUG: Filtered tables:", filtered);
+    return filtered;
+  }, [
+    dashboardData?.tables,
+    dashboardData?.orders,
+    filters.tableStatus,
+    filters.analytics,
+    filters.orderType,
+    searchQuery,
+  ]);
+
+  const getFilteredChefOrders = useMemo(() => {
+    return (dashboardData?.chefOrders || []).filter((chef) => {
+      if (
+        searchQuery &&
+        !(
+          chef.name &&
+          chef.name.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+      )
+        return false;
+      return true;
+    });
+  }, [dashboardData?.chefOrders, searchQuery]);
+
+  const getFilteredOrders = useMemo(() => {
+    return (dashboardData?.orders || []).filter((order) => {
+      if (filters.orderType !== "all" && order.type !== filters.orderType)
+        return false;
+      if (filters.analytics !== "all" && order.status !== filters.analytics)
+        return false;
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        if (
+          !order._id.toLowerCase().includes(q) &&
+          !order.status.toLowerCase().includes(q) &&
+          !order.items.some((item) =>
+            item.menuItem?.name?.toLowerCase().includes(q)
+          )
+        ) {
+          return false;
+        }
+      }
+      return true;
+    });
+  }, [
+    dashboardData?.orders,
+    filters.orderType,
+    filters.analytics,
+    searchQuery,
+  ]);
+
+  const getFilteredMenuItems = useMemo(() => {
+    return (dashboardData?.menuItems || []).filter((item) => {
+      if (
+        searchQuery &&
+        !item.name.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+        return false;
+      return true;
+    });
+  }, [dashboardData?.menuItems, searchQuery]);
+
+  console.log("Pie Container Size:", pieContainerSize);
+  console.log("Line Container Size:", lineContainerSize);
 
   if (loading) return <div className="main-content">Loading dashboard...</div>;
   if (error) return <div className="main-content">{error.message}</div>;
