@@ -587,7 +587,11 @@ function Dashboard({ dashboardData, orderSummary, loading, error }) {
                 <option value="monthly">Monthly</option>
               </select>
             </div>
-            <RevenueChart data={revenueDataChart} size={lineContainerSize} />
+            {revenueDataChart.length > 0 ? (
+              <RevenueChart data={revenueDataChart} size={lineContainerSize} />
+            ) : (
+              <p>No revenue data available for the line chart.</p>
+            )}
           </div>
         </div>
 
