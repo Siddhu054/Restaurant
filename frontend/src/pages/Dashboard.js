@@ -574,7 +574,12 @@ function Dashboard({ dashboardData, orderSummary, loading, error }) {
             </div>
           </div>
 
-          <div className="revenue-chart" ref={lineContainerRef}>
+          {/* Daily Revenue Line Chart */}
+          <div
+            className="revenue-chart"
+            ref={lineContainerRef}
+            style={{ width: "100%", height: "300px" }}
+          >
             <div className="section-header">
               <h2>Daily Revenue</h2>
               <select
