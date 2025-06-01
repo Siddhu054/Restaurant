@@ -526,6 +526,7 @@ function Dashboard({ dashboardData, orderSummary, loading, error }) {
                   height: "200px",
                   overflow: "hidden",
                   flexShrink: 0,
+                  minWidth: "160px",
                 }}
               >
                 <OrderSummaryDonut
