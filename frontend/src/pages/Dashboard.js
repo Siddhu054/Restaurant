@@ -529,12 +529,7 @@ function Dashboard({ dashboardData, orderSummary, loading, error }) {
                   minWidth: "160px",
                 }}
               >
-                <OrderSummaryDonut
-                  served={orderSummaryData.served || 0}
-                  dineIn={orderSummaryData.dineIn || 0}
-                  takeAway={orderSummaryData.takeAway || 0}
-                  size={pieContainerSize}
-                />
+                <OrderSummaryDonut data={pieData} size={pieContainerSize} />
               </div>
               <div className="summary-details">
                 <p>
